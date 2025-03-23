@@ -1,0 +1,81 @@
+<div class="container">
+  <h1 class="mb-4">宿題一覧</h1>
+
+  <% if @homeworks.any? %>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <% @homeworks.each do |homework| %>
+        <%= link_to student_homework_path(homework), class: "col text-decoration-none" do %>
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h2 class="h5 mb-0 text-dark"><%= homework.title %></h2>
+                <% if homework.unanswered_by?(current_user) %>
+                  <% if homework.expired? %>
+                    <span class="badge bg-danger">期限切れ</span>
+                  <% else %>
+                    <span class="badge bg-warning">未提出</span>
+                  <% end %>
+                <% else %>
+                  <span class="badge bg-success">提出済み</span>
+                <% end %>
+              </div>
+
+              <div class="mb-3">
+                <% if homework.teaching_materials.first&.question_image&.attached? %>
+                  <%= image_tag homework.teaching_materials.first.question_image,
+                      class: "img-fluid rounded",
+                      style: "height: 150px; width: 100%; object-fit: cover;" %>
+                <% else %>
+                  <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                       style="height: 150px;">
+                    <i class="bi bi-file-text" style="font-size: 3rem;"></i>
+                  </div>
+                <% end %>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="small">
+                  <div class="text-muted">
+                    問題数: <%= homework.teaching_materials.count %>問
+                  </div>
+                  <div class="<%= homework.expired? ? 'text-danger' : 'text-success' %>">
+                    <% if homework.expired? %>
+                      提出期限: 終了
+                    <% else %>
+                      残り <%= homework.remaining_time %>時間
+                    <% end %>
+                  </div>
+                </div>
+                <div class="fs-4">
+                  <% if homework.unanswered_by?(current_user) %>
+                    <% if homework.expired? %>
+                      <i class="bi bi-x-circle text-danger"></i>
+                    <% else %>
+                      <i class="bi bi-pencil-square text-primary"></i>
+                    <% end %>
+                  <% else %>
+                    <i class="bi bi-check-circle text-success"></i>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <small class="text-muted">
+                提出期限: <%= l homework.deadline, format: :long %>
+              </small>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="alert alert-info">
+      現在、割り当てられている宿題はありません。
+    </div>
+  <% end %>
+</div>
+
+<%= content_for :head do %>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<% end %>

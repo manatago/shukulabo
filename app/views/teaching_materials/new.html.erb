@@ -1,0 +1,14 @@
+<div class="container">
+  <div class="mb-4">
+    <%= link_to "← 教材一覧に戻る", teaching_materials_path, class: "text-decoration-none" %>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h1 class="h2 mb-0">新規<%= TeachingMaterial.model_name.human %>作成</h1>
+    </div>
+    <div class="card-body">
+      <%= render "form", teaching_material: @teaching_material %>
+    </div>
+  </div>
+</div>

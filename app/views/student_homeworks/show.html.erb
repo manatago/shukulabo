@@ -1,0 +1,165 @@
+<div class="container">
+  <div class="mb-4">
+    <%= link_to "← 宿題一覧に戻る", student_homeworks_path, class: "text-decoration-none" %>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="h2 mb-0"><%= @homework.title %></h1>
+        <% if @homework.expired? %>
+          <span class="badge bg-danger">期限切れ</span>
+        <% else %>
+          <span class="badge bg-success">提出期限まで <%= @homework.remaining_time %>時間</span>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="mb-4">
+        <h2 class="h4 mb-3">提出期限</h2>
+        <p class="mb-0"><%= l @homework.deadline, format: :long %></p>
+      </div>
+
+      <div class="mb-4">
+        <h2 class="h4 mb-3">問題</h2>
+        <% @homework.homework_materials.each_with_index do |homework_material, index| %>
+          <div class="card mb-3">
+            <div class="card-body">
+              <h3 class="h5 mb-3">問題 <%= index + 1 %></h3>
+              
+              <% material = homework_material.teaching_material %>
+              <% if material.question_image.attached? %>
+                <div class="mb-3">
+                  <%= image_tag material.question_image, class: "img-fluid rounded" %>
+                </div>
+              <% end %>
+              
+              <% if material.question_text.present? %>
+                <div class="card bg-light">
+                  <div class="card-body">
+                    <%= simple_format material.question_text %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <% if @answer %>
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2 class="h4 mb-0">あなたの回答</h2>
+          </div>
+          <div class="card-body">
+            <% if @answer.answer_text.present? %>
+              <div class="mb-3">
+                <%= simple_format @answer.answer_text %>
+              </div>
+            <% end %>
+
+            <% if @answer.images.attached? %>
+              <div class="row">
+                <% @answer.images.each do |image| %>
+                  <div class="col-md-4 mb-3">
+                    <%= image_tag image, class: "img-fluid rounded" %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+
+            <div class="text-muted">
+              <small>提出日時: <%= l @answer.submitted_at, format: :long %></small>
+              <% if @answer.submitted_on_time? %>
+                <span class="badge bg-success ms-2">期限内に提出</span>
+              <% else %>
+                <span class="badge bg-warning ms-2">期限後に提出</span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% elsif @can_answer %>
+        <div class="card">
+          <div class="card-header">
+            <h2 class="h4 mb-0">回答を提出</h2>
+          </div>
+          <div class="card-body">
+            <%= form_with(model: HomeworkAnswer.new, url: answer_student_homework_path(@homework), local: true, html: { class: "needs-validation" }) do |f| %>
+              <div class="mb-3">
+                <%= f.label :answer_text, "回答テキスト", class: "form-label" %>
+                <%= f.text_area :answer_text, class: "form-control", rows: 5 %>
+                <div class="form-text">テキストまたは画像のどちらかを入力してください</div>
+              </div>
+
+              <div class="mb-4">
+                <%= f.label :images, "画像", class: "form-label d-block" %>
+                <div class="d-flex gap-2 mb-2">
+                  <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('camera-input').click()">
+                    <i class="bi bi-camera"></i> カメラで撮影
+                  </button>
+                  <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('file-input').click()">
+                    <i class="bi bi-upload"></i> 画像をアップロード
+                  </button>
+                </div>
+                <%= f.file_field :images,
+                    multiple: true,
+                    accept: "image/*",
+                    class: "d-none",
+                    id: "file-input",
+                    data: { action: "change->preview#showImages" } %>
+                <%= f.file_field :images,
+                    multiple: true,
+                    accept: "image/*",
+                    capture: "environment",
+                    class: "d-none",
+                    id: "camera-input",
+                    data: { action: "change->preview#showImages" } %>
+                <div id="image-preview" class="row g-2"></div>
+              </div>
+
+              <%= f.submit "回答を提出", class: "btn btn-primary",
+                  data: { confirm: "提出後は編集できません。本当に提出しますか？" } %>
+            <% end %>
+          </div>
+        </div>
+
+        <%= content_for :head do %>
+          <script>
+            document.addEventListener("DOMContentLoaded", function() {
+              const preview = document.getElementById('image-preview');
+              
+              function showImages(input) {
+                preview.innerHTML = '';
+                
+                Array.from(input.files).forEach(file => {
+                  const reader = new FileReader();
+                  reader.onload = function(e) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-4 mb-3';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'img-fluid rounded';
+                    
+                    col.appendChild(img);
+                    preview.appendChild(col);
+                  }
+                  reader.readAsDataURL(file);
+                });
+              }
+
+              document.getElementById('file-input').addEventListener('change', function() {
+                showImages(this);
+              });
+
+              document.getElementById('camera-input').addEventListener('change', function() {
+                showImages(this);
+              });
+            });
+          </script>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

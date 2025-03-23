@@ -1,0 +1,60 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><%= Tag.model_name.human %>一覧</h1>
+    <%= link_to "新規#{Tag.model_name.human}作成", new_tag_path, class: "btn btn-primary" %>
+  </div>
+
+  <% if @tags.any? %>
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th><%= Tag.human_attribute_name(:name) %></th>
+                <th>使用数</th>
+                <th>作成日時</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @tags.each do |tag| %>
+                <tr>
+                  <td>
+                    <span class="badge bg-secondary"><%= tag.name %></span>
+                  </td>
+                  <td>
+                    <% if tag.teaching_materials.any? %>
+                      <span class="badge bg-info"><%= tag.teaching_materials.count %>個の教材で使用中</span>
+                    <% else %>
+                      <span class="text-muted">未使用</span>
+                    <% end %>
+                  </td>
+                  <td><%= l tag.created_at, format: :short %></td>
+                  <td>
+                    <div class="btn-group">
+                      <%= link_to "編集", edit_tag_path(tag),
+                          class: "btn btn-sm btn-outline-primary" %>
+                      <%= button_to "削除", tag_path(tag),
+                          method: :delete,
+                          class: "btn btn-sm btn-outline-danger",
+                          data: {
+                            turbo_confirm: "本当に削除しますか？"
+                          },
+                          disabled: tag.teaching_materials.any? %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <div class="alert alert-info">
+      タグがまだ作成されていません。
+      <%= link_to "新規作成", new_tag_path, class: "alert-link" %>から登録を開始してください。
+    </div>
+  <% end %>
+</div>

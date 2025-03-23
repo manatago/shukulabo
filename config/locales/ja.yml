@@ -1,0 +1,79 @@
+ja:
+  activerecord:
+    models:
+      user: ユーザー
+      account_group: 生徒グループ
+      teaching_material: 教材
+      tag: タグ
+      homework: 宿題
+      homework_answer: 宿題回答
+
+  homework:
+    messages:
+      deadline_passed: "提出期限が過ぎています"
+      answer_submitted: "回答を提出しました"
+      already_answered: "この宿題には既に回答済みです"
+      no_materials: "教材が選択されていません"
+      save_error: "宿題の保存に失敗しました"
+      answer_required: "テキストまたは画像による回答が必要です"
+      upload_error: "画像のアップロードに失敗しました"
+      
+    status:
+      expired: "期限切れ"
+      pending: "未提出"
+      submitted: "提出済み"
+      submitted_late: "期限後に提出"
+    attributes:
+      user:
+        name: 名前
+        email: メールアドレス
+        is_admin: 管理者権限
+      account_group:
+        name: グループ名
+      teaching_material:
+        title: タイトル
+        question_text: 問題文
+        answer_text: 解答
+        question_image: 問題画像
+        answer_image: 解答画像
+      tag:
+        name: タグ名
+      homework:
+        title: 宿題タイトル
+        deadline: 提出期限
+        account_group: 対象グループ
+        account_group_id: 対象グループ
+      homework_answer:
+        answer_text: 回答テキスト
+        images: 画像
+
+  time:
+    formats:
+      default: "%Y年%m月%d日 %H:%M"
+      short: "%m/%d %H:%M"
+      long: "%Y年%m月%d日 %H:%M:%S"
+      date_only: "%Y年%m月%d日"
+
+  views:
+    pagination:
+      first: "&laquo; 最初"
+      last: "最後 &raquo;"
+      previous: "&lsaquo; 前"
+      next: "次 &rsaquo;"
+      truncate: "..."
+
+  helpers:
+    submit:
+      create: 登録する
+      update: 更新する
+      submit: 保存する
+
+  notices:
+    created: "%{model}を作成しました"
+    updated: "%{model}を更新しました"
+    deleted: "%{model}を削除しました"
+
+  errors:
+    messages:
+      not_saved: "保存できませんでした"
+      not_authorized: "権限がありません"

@@ -1,0 +1,61 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><%= AccountGroup.model_name.human %>一覧</h1>
+    <%= link_to "新規#{AccountGroup.model_name.human}作成", new_admin_account_group_path, class: "btn btn-primary" %>
+  </div>
+
+  <% if @account_groups.any? %>
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th><%= AccountGroup.human_attribute_name(:name) %></th>
+                <th>所属生徒</th>
+                <th>作成日時</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @account_groups.each do |group| %>
+                <tr>
+                  <td><%= group.name %></td>
+                  <td>
+                    <% if group.users.any? %>
+                      <div class="d-flex align-items-center">
+                        <span class="badge bg-info me-2"><%= group.users.count %>名</span>
+                        <small class="text-muted">
+                          <%= group.users.pluck(:name).join(", ") %>
+                        </small>
+                      </div>
+                    <% else %>
+                      <span class="text-muted">所属生徒なし</span>
+                    <% end %>
+                  </td>
+                  <td><%= l group.created_at, format: :short %></td>
+                  <td>
+                    <div class="btn-group">
+                      <%= link_to "編集", edit_admin_account_group_path(group),
+                          class: "btn btn-sm btn-outline-primary" %>
+                      <%= button_to "削除", admin_account_group_path(group),
+                          method: :delete,
+                          class: "btn btn-sm btn-outline-danger",
+                          data: { turbo_confirm: "本当に削除しますか？" },
+                          disabled: group.users.any? %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <div class="alert alert-info">
+      生徒グループがまだ作成されていません。
+      <%= link_to "新規作成", new_admin_account_group_path, class: "alert-link" %>から登録を開始してください。
+    </div>
+  <% end %>
+</div>

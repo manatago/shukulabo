@@ -1,0 +1,76 @@
+<div class="container">
+  <div class="mb-4">
+    <%= link_to "← 教材一覧に戻る", teaching_materials_path, class: "text-decoration-none" %>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="h2 mb-0"><%= @teaching_material.title %></h1>
+        <div>
+          <%= link_to "編集", edit_teaching_material_path(@teaching_material), class: "btn btn-outline-primary me-2" %>
+          <%= button_to "削除", teaching_material_path(@teaching_material), method: :delete,
+              class: "btn btn-outline-danger", data: { turbo_confirm: "本当に削除しますか？" } %>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <h2 class="h4 mb-3">問題</h2>
+          <% if @teaching_material.question_image.attached? %>
+            <div class="mb-3">
+              <%= image_tag @teaching_material.question_image, class: "img-fluid rounded" %>
+            </div>
+          <% end %>
+          
+          <% if @teaching_material.question_text.present? %>
+            <div class="card">
+              <div class="card-body">
+                <%= simple_format @teaching_material.question_text %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="col-md-6 mb-4">
+          <h2 class="h4 mb-3">解答</h2>
+          <% if @teaching_material.answer_image.attached? %>
+            <div class="mb-3">
+              <%= image_tag @teaching_material.answer_image, class: "img-fluid rounded" %>
+            </div>
+          <% end %>
+          
+          <% if @teaching_material.answer_text.present? %>
+            <div class="card">
+              <div class="card-body">
+                <%= simple_format @teaching_material.answer_text %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <% if @teaching_material.tags.any? %>
+        <div class="mt-4">
+          <h3 class="h5 mb-2">タグ</h3>
+          <div>
+            <% @teaching_material.tags.each do |tag| %>
+              <%= link_to tag.name, search_teaching_materials_path(tag: tag.name),
+                  class: "badge bg-secondary text-decoration-none me-1" %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="card-footer text-muted">
+      <small>作成日時: <%= l @teaching_material.created_at, format: :long %></small>
+      <% if @teaching_material.updated_at != @teaching_material.created_at %>
+        <br>
+        <small>更新日時: <%= l @teaching_material.updated_at, format: :long %></small>
+      <% end %>
+    </div>
+  </div>
+</div>

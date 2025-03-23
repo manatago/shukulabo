@@ -1,0 +1,31 @@
+<div class="container">
+  <div class="mb-4">
+    <%= link_to "← 生徒グループ一覧に戻る", admin_account_groups_path, class: "text-decoration-none" %>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h1 class="h2 mb-0"><%= AccountGroup.model_name.human %>編集</h1>
+    </div>
+    <div class="card-body">
+      <%= render "form", account_group: @account_group %>
+
+      <% if @account_group.users.any? %>
+        <hr class="my-4">
+        <h2 class="h4 mb-3">所属生徒一覧</h2>
+        <div class="list-group">
+          <% @account_group.users.each do |user| %>
+            <div class="list-group-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h3 class="h6 mb-1"><%= user.name %></h3>
+                  <small class="text-muted"><%= user.email %></small>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

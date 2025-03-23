@@ -1,0 +1,23 @@
+<%= form_with(model: [:admin, account_group], local: true, html: { class: "needs-validation" }) do |f| %>
+  <% if account_group.errors.any? %>
+    <div class="alert alert-danger">
+      <h4><%= pluralize(account_group.errors.count, "個のエラー") %></h4>
+      <ul>
+        <% account_group.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= f.label :name, class: "form-label" %>
+    <%= f.text_field :name, class: "form-control", required: true %>
+    <div class="form-text">生徒の識別が容易な名前（例：生徒の名前）を設定してください。</div>
+  </div>
+
+  <div class="d-flex justify-content-between">
+    <%= link_to "キャンセル", admin_account_groups_path, class: "btn btn-outline-secondary" %>
+    <%= f.submit class: "btn btn-primary" %>
+  </div>
+<% end %>

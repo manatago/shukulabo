@@ -1,0 +1,17 @@
+<div class="container">
+  <div class="mb-4">
+    <%= link_to "← 教材一覧に戻る", teaching_materials_path, class: "text-decoration-none" %>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="h2 mb-0"><%= TeachingMaterial.model_name.human %>編集</h1>
+        <%= link_to "詳細を見る", teaching_material_path(@teaching_material), class: "btn btn-outline-primary" %>
+      </div>
+    </div>
+    <div class="card-body">
+      <%= render "form", teaching_material: @teaching_material %>
+    </div>
+  </div>
+</div>
