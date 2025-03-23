@@ -25,4 +25,4 @@ OmniAuth.config.full_host = lambda do |env|
 end
 
 # 開発環境でのSSL認証スキップ（開発環境のみ）
-OmniAuth.config.allowed_request_methods = [:post, :get] if Rails.env.development?
+OmniAuth.config.allowed_request_methods = [:post, :get]
