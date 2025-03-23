@@ -34,5 +34,7 @@ module Shukulabo
       g.assets false          # CSS, JavaScriptファイルを自動生成しない
       g.helper false         # helperを自動生成しない
     end
+
+    config.hosts << "shukulabo.kyozai.net"
   end
 end
