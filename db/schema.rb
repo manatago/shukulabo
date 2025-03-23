@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_03_23_074652) do
+ActiveRecord::Schema[7.2].define(version: 2025_03_23_131417) do
   create_table "account_groups", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -43,6 +43,19 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_23_074652) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "homework_answer_grades", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "homework_answer_id", null: false, comment: "採点対象の回答"
+    t.bigint "teaching_material_id", null: false, comment: "採点対象の問題"
+    t.integer "score", comment: "採点結果（0: ×, 1: △, 2: ○）"
+    t.text "comment", comment: "採点コメント"
+    t.boolean "repeat", default: false, null: false, comment: "リピート問題フラグ"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["homework_answer_id", "teaching_material_id"], name: "idx_unique_grade", unique: true
+    t.index ["homework_answer_id"], name: "index_homework_answer_grades_on_homework_answer_id"
+    t.index ["teaching_material_id"], name: "index_homework_answer_grades_on_teaching_material_id"
   end
 
   create_table "homework_answers", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -98,6 +111,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_23_074652) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.text "correct_answer", comment: "問題の正答"
     t.index ["user_id"], name: "index_teaching_materials_on_user_id"
   end
 
@@ -117,6 +131,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_23_074652) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "homework_answer_grades", "homework_answers"
+  add_foreign_key "homework_answer_grades", "teaching_materials"
   add_foreign_key "homework_answers", "homeworks"
   add_foreign_key "homework_answers", "users"
   add_foreign_key "homework_materials", "homeworks"

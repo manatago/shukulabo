@@ -11,9 +11,34 @@ class Homework < ApplicationRecord
   validates :account_group_id, presence: true
   validate :deadline_must_be_future
 
-  # 未回答の宿題かどうかを判定
-  def unanswered_by?(user)
-    homework_answers.where(user: user).empty?
+  # 指定ユーザーの回答を取得
+  def answer_by(user)
+    homework_answers.find_by(user: user)
+  end
+
+  # 指定ユーザーの提出状態を取得
+  def submission_status_for(user)
+    answer = answer_by(user)
+    return :not_submitted unless answer
+    answer.submission_status
+  end
+
+  # 提出状態のラベルを返す
+  def submission_status_label_for(user)
+    case submission_status_for(user)
+    when :graded then "採点済み"
+    when :submitted then "提出済み"
+    else "未提出"
+    end
+  end
+
+  # 提出状態に応じたバッジのクラスを返す
+  def submission_status_badge_class_for(user)
+    case submission_status_for(user)
+    when :graded then "bg-secondary"
+    when :submitted then "bg-success"
+    else "bg-warning"
+    end
   end
 
   # 期限切れかどうかを判定

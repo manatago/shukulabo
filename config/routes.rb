@@ -21,6 +21,10 @@ Rails.application.routes.draw do
         resources :users, only: [:index, :edit, :update] do
           member do
             patch :toggle_admin
+            post :impersonate
+          end
+          collection do
+            delete :stop_impersonating
           end
         end
         resources :account_groups
@@ -39,6 +43,7 @@ Rails.application.routes.draw do
       resources :homeworks do
         member do
           get :answers
+          patch 'answers/:answer_id/grade/:teaching_material_id', action: :grade_answer, as: :grade_answer
         end
       end
     end

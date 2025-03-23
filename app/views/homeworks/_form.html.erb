@@ -73,6 +73,6 @@
 
   <div class="d-flex justify-content-between">
     <%= link_to "キャンセル", homeworks_path, class: "btn btn-outline-secondary" %>
-    <%= f.submit class: "btn btn-primary" %>
+    <%= f.submit homework.new_record? ? "作成" : "更新", class: "btn btn-primary" %>
   </div>
 <% end %>

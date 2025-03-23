@@ -22,7 +22,15 @@
             <tbody>
               <% @homeworks.each do |homework| %>
                 <tr>
-                  <td><%= homework.title %></td>
+                  <td>
+                    <% fully_graded = homework.homework_answers.all? { |answer| answer.fully_graded? } %>
+                    <span class="<%= fully_graded ? 'text-secondary' : '' %>">
+                      <%= homework.title %>
+                    </span>
+                    <% if fully_graded %>
+                      <span class="badge bg-secondary ms-2">採点済み</span>
+                    <% end %>
+                  </td>
                   <td>
                     <span class="badge bg-info">
                       <%= homework.account_group.name %>
@@ -32,14 +40,24 @@
                   <td>
                     <% total = homework.account_group.student_count %>
                     <% submitted = homework.homework_answers.count %>
+                    <% graded = homework.homework_answers.count { |answer| answer.fully_graded? } %>
                     <div class="d-flex align-items-center">
                       <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                        <div class="progress-bar bg-secondary"
+                             role="progressbar"
+                             style="width: <%= total.zero? ? 0 : (graded.to_f / total * 100).round %>%">
+                        </div>
                         <div class="progress-bar bg-success"
                              role="progressbar"
-                             style="width: <%= total.zero? ? 0 : (submitted.to_f / total * 100).round %>%">
+                             style="width: <%= total.zero? ? 0 : ((submitted - graded).to_f / total * 100).round %>%">
                         </div>
                       </div>
-                      <small class="text-muted"><%= submitted %>/<%= total %></small>
+                      <small class="text-muted">
+                        <%= submitted %>/<%= total %>
+                        <% if graded > 0 %>
+                          <span class="text-secondary">（採点済み: <%= graded %>）</span>
+                        <% end %>
+                      </small>
                     </div>
                   </td>
                   <td>

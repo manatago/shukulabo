@@ -63,6 +63,7 @@ class TeachingMaterialsController < ApplicationController
       :title,
       :question_text,
       :answer_text,
+      :correct_answer,
       :question_image,
       :answer_image,
       tag_ids: []

@@ -7,7 +7,7 @@ class HomeworksController < Admin::BaseController
   end
 
   def show
-    @answers = @homework.homework_answers.includes(:user)
+    @answers = @homework.homework_answers.includes(:user, images_attachments: :blob).order(:created_at)
   end
 
   def new
@@ -19,6 +19,8 @@ class HomeworksController < Admin::BaseController
   def edit
     @account_groups = AccountGroup.all
     @available_materials = TeachingMaterial.where(user: current_user).order(created_at: :desc)
+  rescue ActiveRecord::RecordNotFound
+    redirect_to homeworks_path, alert: "指定された宿題は存在しないか、アクセス権限がありません"
   end
 
   def create
@@ -51,7 +53,31 @@ class HomeworksController < Admin::BaseController
     redirect_to homeworks_url, notice: t('notices.deleted', model: Homework.model_name.human)
   end
 
+  def grade_answer
+    Rails.logger.debug "Params received: #{params.inspect}"
+
+    @homework = current_user.homeworks.find(params[:id])
+    @answer = @homework.homework_answers.find(params[:answer_id])
+    @material = TeachingMaterial.find(params[:teaching_material_id])
+
+    @grade = @answer.grades.find_or_initialize_by(teaching_material: @material)
+
+    if @grade.update(grade_params)
+      Rails.logger.debug "Grade updated successfully: #{@grade.inspect}"
+      flash.now[:notice] = "#{@answer.user.name}さんの回答（問題#{@homework.homework_materials.find_by(teaching_material: @material).position + 1}）を採点しました"
+      redirect_to @homework, notice: flash.now[:notice], status: :see_other
+    else
+      Rails.logger.debug "Grade update failed: #{@grade.errors.full_messages}"
+      error_messages = @grade.errors.full_messages.join(", ")
+      redirect_to @homework, alert: "採点の保存に失敗しました: #{error_messages}", status: :unprocessable_entity
+    end
+  end
+
   private
+
+  def grade_params
+    params.require(:grade).permit(:score, :comment, :repeat)
+  end
 
   def set_homework
     @homework = current_user.homeworks.find(params[:id])

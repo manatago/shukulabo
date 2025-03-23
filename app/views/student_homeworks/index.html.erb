@@ -9,14 +9,12 @@
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <h2 class="h5 mb-0 text-dark"><%= homework.title %></h2>
-                <% if homework.unanswered_by?(current_user) %>
-                  <% if homework.expired? %>
-                    <span class="badge bg-danger">期限切れ</span>
-                  <% else %>
-                    <span class="badge bg-warning">未提出</span>
-                  <% end %>
+                <% if homework.expired? && homework.submission_status_for(current_user) == :not_submitted %>
+                  <span class="badge bg-danger">期限切れ</span>
                 <% else %>
-                  <span class="badge bg-success">提出済み</span>
+                  <span class="badge <%= homework.submission_status_badge_class_for(current_user) %>">
+                    <%= homework.submission_status_label_for(current_user) %>
+                  </span>
                 <% end %>
               </div>
 
@@ -47,14 +45,17 @@
                   </div>
                 </div>
                 <div class="fs-4">
-                  <% if homework.unanswered_by?(current_user) %>
+                  <% case homework.submission_status_for(current_user) %>
+                  <% when :graded %>
+                    <i class="bi bi-check-circle-fill text-secondary"></i>
+                  <% when :submitted %>
+                    <i class="bi bi-check-circle text-success"></i>
+                  <% else %>
                     <% if homework.expired? %>
                       <i class="bi bi-x-circle text-danger"></i>
                     <% else %>
                       <i class="bi bi-pencil-square text-primary"></i>
                     <% end %>
-                  <% else %>
-                    <i class="bi bi-check-circle text-success"></i>
                   <% end %>
                 </div>
               </div>

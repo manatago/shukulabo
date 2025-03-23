@@ -22,6 +22,20 @@ class Admin::UsersController < Admin::BaseController
     redirect_to admin_users_path, notice: "#{@user.name}の管理者権限を#{@user.admin? ? '付与' : '削除'}しました"
   end
 
+  def impersonate
+    user = User.find(params[:id])
+    session[:admin_id] = current_user.id
+    session[:user_id] = user.id
+    redirect_to root_path, notice: "#{user.name}として操作を開始しました"
+  end
+
+  def stop_impersonating
+    return unless session[:admin_id]
+    session[:user_id] = session[:admin_id]
+    session.delete(:admin_id)
+    redirect_to admin_users_path, notice: "管理者アカウントに戻りました"
+  end
+
   private
 
   def set_user

@@ -1,0 +1,283 @@
+<div class="container">
+  <div class="mb-4">
+    <%= link_to "← 宿題一覧に戻る", homeworks_path, class: "text-decoration-none" %>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h1 class="h2 mb-0"><%= @homework.title %></h1>
+    </div>
+
+    <div class="card-body">
+      <div class="mb-4">
+        <h2 class="h4 mb-3">提出期限</h2>
+        <p class="mb-0"><%= l @homework.deadline, format: :long %></p>
+      </div>
+
+      <div class="mb-4">
+        <h2 class="h4 mb-3">対象グループ</h2>
+        <p class="mb-0"><%= @homework.account_group.name %></p>
+      </div>
+
+      <div class="mb-4">
+        <h2 class="h4 mb-3">問題一覧</h2>
+        <% @homework.homework_materials.each_with_index do |homework_material, index| %>
+          <div class="card mb-3">
+            <div class="card-body">
+              <h3 class="h5 mb-3">問題 <%= index + 1 %></h3>
+              
+              <% material = homework_material.teaching_material %>
+              <% if material.question_image.attached? %>
+                <div class="mb-3">
+                  <%= image_tag material.question_image, class: "img-fluid rounded" %>
+                </div>
+              <% end %>
+              
+              <% if material.question_text.present? %>
+                <div class="card bg-light mb-3">
+                  <div class="card-body">
+                    <%= simple_format material.question_text %>
+                  </div>
+                </div>
+              <% end %>
+
+              <% if material.correct_answer.present? %>
+                <div class="card border-success">
+                  <div class="card-header bg-success text-white">
+                    <h4 class="h6 mb-0">正答</h4>
+                  </div>
+                  <div class="card-body">
+                    <%= simple_format material.correct_answer %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="mb-4">
+        <h2 class="h4 mb-3">提出状況</h2>
+        <div class="table-responsive">
+          <table class="table">
+            <thead class="table-light">
+              <tr>
+                <th>生徒名</th>
+                <th>提出日時</th>
+                <th style="width: 100px;">採点</th>
+                <th>リピート</th>
+                <th>コメント</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @answers.each do |answer| %>
+                <tr>
+                  <td><%= answer.user.name %></td>
+                  <td>
+                    <%= l answer.submitted_at, format: :long %>
+                    <% unless answer.submitted_on_time? %>
+                      <span class="badge bg-warning">遅延提出</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <% if answer.fully_graded? %>
+                      <div class="d-flex gap-1">
+                        <% @homework.homework_materials.order(:position).each_with_index do |hm, index| %>
+                          <% grade = answer.grade_for(hm.teaching_material) %>
+                          <span class="badge <%= grade.score == 2 ? 'bg-success' : (grade.score == 1 ? 'bg-warning' : 'bg-danger') %>"
+                                title="問題<%= index + 1 %>">
+                            <%= grade.score_label %>
+                          </span>
+                        <% end %>
+                      </div>
+                    <% else %>
+                      <span class="badge bg-secondary">未採点</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <% repeat_count = answer.grades.where(repeat: true).count %>
+                    <% if repeat_count > 0 %>
+                      <span class="badge bg-info">リピート <%= repeat_count %>問</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <% if answer.grades.any? %>
+                      <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#comments<%= answer.id %>">
+                        コメントを表示
+                      </button>
+                      <div class="collapse" id="comments<%= answer.id %>">
+                        <div class="mt-2">
+                          <% answer.grades.includes(:teaching_material).each_with_index do |grade, index| %>
+                            <% if grade.comment.present? %>
+                              <div class="mb-1">
+                                <small class="text-muted">問題<%= index + 1 %>:</small>
+                                <div class="ms-2"><%= simple_format grade.comment, class: 'mb-0 small' %></div>
+                              </div>
+                            <% end %>
+                          <% end %>
+                        </div>
+                      </div>
+                    <% end %>
+                  </td>
+                  <td>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#gradeModal<%= answer.id %>">
+                      採点する
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- 採点モーダル -->
+                <div class="modal fade" id="gradeModal<%= answer.id %>" tabindex="-1">
+                  <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title"><%= answer.user.name %>さんの回答を採点</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                      </div>
+                      <div class="modal-body">
+                        <div class="row">
+                          <!-- 生徒の回答 -->
+                          <div class="col-md-6">
+                            <div class="mb-4">
+                              <h6>回答内容</h6>
+                              <% if answer.answer_text.present? %>
+                                <div class="card bg-light mb-3">
+                                  <div class="card-body">
+                                    <%= simple_format answer.answer_text %>
+                                  </div>
+                                </div>
+                              <% end %>
+
+                              <% if answer.images.attached? %>
+                                <div class="row">
+                                  <% answer.images.each do |image| %>
+                                    <div class="col-md-6 mb-3">
+                                      <%= image_tag image, class: "img-fluid rounded" %>
+                                    </div>
+                                  <% end %>
+                                </div>
+                              <% end %>
+                            </div>
+                          </div>
+
+                          <!-- 問題と採点状況 -->
+                          <div class="col-md-6">
+                            <div class="accordion mb-4" id="problemsAccordion<%= answer.id %>">
+                              <% @homework.homework_materials.order(:position).each_with_index do |homework_material, index| %>
+                                <% material = homework_material.teaching_material %>
+                                <% grade = answer.grade_for(material) %>
+                                <div class="accordion-item">
+                                  <h2 class="accordion-header">
+                                    <button class="accordion-button <%= 'collapsed' unless index.zero? %>"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#problem<%= answer.id %>_<%= material.id %>"
+                                            aria-expanded="<%= index.zero? %>"
+                                            aria-controls="problem<%= answer.id %>_<%= material.id %>">
+                                      問題 <%= index + 1 %>
+                                      <% if grade %>
+                                        <span class="ms-2 badge <%= grade.score == 2 ? 'bg-success' : (grade.score == 1 ? 'bg-warning' : 'bg-danger') %>">
+                                          <%= grade.score_label %>
+                                        </span>
+                                        <% if grade.repeat? %>
+                                          <span class="ms-1 badge bg-info">リピート</span>
+                                        <% end %>
+                                      <% else %>
+                                        <span class="ms-2 badge bg-secondary">未採点</span>
+                                      <% end %>
+                                    </button>
+                                  </h2>
+                                  <div id="problem<%= answer.id %>_<%= material.id %>"
+                                       class="accordion-collapse collapse <%= 'show' if index.zero? %>"
+                                       data-bs-parent="#problemsAccordion<%= answer.id %>">
+                                    <div class="accordion-body">
+                                      <% if material.question_text.present? %>
+                                        <div class="card bg-light mb-3">
+                                          <div class="card-header">
+                                            <h6 class="mb-0">問題</h6>
+                                          </div>
+                                          <div class="card-body">
+                                            <%= simple_format material.question_text %>
+                                          </div>
+                                        </div>
+                                      <% end %>
+
+                                      <% if material.correct_answer.present? %>
+                                        <div class="card border-success mb-3">
+                                          <div class="card-header bg-success text-white">
+                                            <h6 class="mb-0">正答</h6>
+                                          </div>
+                                          <div class="card-body">
+                                            <%= simple_format material.correct_answer %>
+                                          </div>
+                                        </div>
+                                      <% end %>
+
+                                      <%= form_with model: grade || HomeworkAnswerGrade.new,
+                                                  url: grade_answer_homework_path(@homework, answer, teaching_material_id: material.id),
+                                                  method: :patch,
+                                                  data: { turbo: false },
+                                                  html: { id: "gradeForm#{answer.id}_#{material.id}" },
+                                                  scope: :grade do |f| %>
+                                        <div class="mb-3">
+                                          <label class="form-label">採点</label>
+                                          <div class="btn-group w-100" role="group">
+                                            <% HomeworkAnswerGrade::SCORES.each do |key, value| %>
+                                              <input type="radio" class="btn-check" name="grade[score]"
+                                                    id="score_<%= answer.id %>_<%= material.id %>_<%= value %>" value="<%= value %>"
+                                                    <%= 'checked' if grade&.score == value %>>
+                                              <label class="btn <%= grade&.score == value ? 'btn-primary' : 'btn-outline-primary' %>"
+                                                     for="score_<%= answer.id %>_<%= material.id %>_<%= value %>">
+                                                <%= key == :good ? "○" : (key == :fair ? "△" : "×") %>
+                                              </label>
+                                            <% end %>
+                                          </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                          <div class="form-check">
+                                            <%= f.check_box :repeat, class: "form-check-input" %>
+                                            <%= f.label :repeat, "リピートが必要", class: "form-check-label" %>
+                                          </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                          <%= f.label :comment, "コメント", class: "form-label" %>
+                                          <%= f.text_area :comment, class: "form-control", rows: 3 %>
+                                        </div>
+
+                                        <div class="text-end">
+                                          <%= f.submit "採点を保存", class: "btn btn-primary" %>
+                                        </div>
+                                      <% end %>
+
+                                      <script>
+                                        // フォーム送信後にモーダルを閉じる
+                                        document.getElementById('gradeForm<%= answer.id %>_<%= material.id %>').addEventListener('submit', function() {
+                                          const modal = document.getElementById('gradeModal<%= answer.id %>');
+                                          const bootstrapModal = bootstrap.Modal.getInstance(modal);
+                                          setTimeout(function() {
+                                            bootstrapModal.hide();
+                                          }, 100);
+                                        });
+                                      </script>
+                                    </div>
+                                  </div>
+                                </div>
+                              <% end %>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -7,11 +7,21 @@
     <div class="card-header">
       <div class="d-flex justify-content-between align-items-center">
         <h1 class="h2 mb-0"><%= @homework.title %></h1>
-        <% if @homework.expired? %>
-          <span class="badge bg-danger">期限切れ</span>
-        <% else %>
-          <span class="badge bg-success">提出期限まで <%= @homework.remaining_time %>時間</span>
-        <% end %>
+        <div>
+          <% if @answer %>
+            <% if @answer.grades.any? %>
+              <span class="badge bg-secondary">採点済み</span>
+            <% else %>
+              <span class="badge bg-success">提出済み</span>
+            <% end %>
+          <% else %>
+            <% if @homework.expired? %>
+              <span class="badge bg-danger">期限切れ</span>
+            <% else %>
+              <span class="badge bg-success">提出期限まで <%= @homework.remaining_time %>時間</span>
+            <% end %>
+          <% end %>
+        </div>
       </div>
     </div>
 
@@ -66,6 +76,40 @@
                     <%= image_tag image, class: "img-fluid rounded" %>
                   </div>
                 <% end %>
+              </div>
+            <% end %>
+
+            <% if @answer.grades.any? %>
+              <div class="card bg-light mb-3">
+                <div class="card-header">
+                  <h3 class="h5 mb-0">採点結果</h3>
+                </div>
+                <div class="card-body">
+                  <% @homework.homework_materials.order(:position).each_with_index do |homework_material, index| %>
+                    <% grade = @answer.grade_for(homework_material.teaching_material) %>
+                    <div class="mb-3">
+                      <h4 class="h6">問題 <%= index + 1 %></h4>
+                      <div class="d-flex align-items-center gap-2 mb-2">
+                        <% if grade %>
+                          <span class="fs-5 <%= grade.score == 2 ? 'text-success' : (grade.score == 1 ? 'text-warning' : 'text-danger') %>">
+                            <%= grade.score_label %>
+                          </span>
+                          <% if grade.repeat? %>
+                            <span class="badge bg-info">リピート</span>
+                          <% end %>
+                        <% else %>
+                          <span class="text-muted">未採点</span>
+                        <% end %>
+                      </div>
+                      <% if grade&.comment.present? %>
+                        <div class="mt-2">
+                          <small class="text-muted">コメント:</small>
+                          <div class="ms-2"><%= simple_format grade.comment, class: 'mb-0 small' %></div>
+                        </div>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
               </div>
             <% end %>
 
