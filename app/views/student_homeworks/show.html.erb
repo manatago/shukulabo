@@ -63,86 +63,72 @@
             <h2 class="h4 mb-0">あなたの回答</h2>
           </div>
           <div class="card-body">
-            <%= form_with(model: @answer, url: update_answer_student_homework_path(@homework), local: true) do |f| %>
-              <div class="mb-3">
-                <%= f.label :answer_text, "回答テキスト", class: "form-label" %>
-                <%= f.text_area :answer_text, class: "form-control", rows: 5 %>
-              </div>
+            <div class="mb-4">
+              <%= form_with(model: @answer, url: update_answer_student_homework_path(@homework), local: true) do |f| %>
+                <div class="mb-3">
+                  <%= f.label :answer_text, "回答テキスト", class: "form-label" %>
+                  <%= f.text_area :answer_text, class: "form-control", rows: 5 %>
+                </div>
+                <%= f.submit "テキストを更新", class: "btn btn-primary" %>
+              <% end %>
+            </div>
 
-              <div class="mb-4">
-                <%= f.label :images, "画像", class: "form-label d-block" %>
-                <div class="d-flex gap-2 mb-2">
-                  <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('edit-camera-input').click()">
+            <div class="mb-4">
+              <h3 class="h5 mb-3">画像の追加</h3>
+              <div class="d-flex flex-wrap gap-2 mb-4">
+                <!-- カメラ撮影用フォーム -->
+                <%= form_with(model: @answer, url: update_answer_student_homework_path(@homework), local: true, class: "d-inline-block", data: { turbo: false }) do |f| %>
+                  <%= f.file_field :images,
+                      multiple: true,
+                      direct_upload: true,
+                      accept: "image/*",
+                      capture: "environment",
+                      class: "d-none",
+                      id: "camera-input",
+                      onchange: "this.form.requestSubmit();" %>
+                  <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('camera-input').click()">
                     <i class="bi bi-camera"></i> カメラで撮影
                   </button>
-                  <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('edit-file-input').click()">
+                <% end %>
+
+                <!-- 画像アップロード用フォーム -->
+                <%= form_with(model: @answer, url: update_answer_student_homework_path(@homework), local: true, class: "d-inline-block", data: { turbo: false }) do |f| %>
+                  <%= f.file_field :images,
+                      multiple: true,
+                      direct_upload: true,
+                      accept: "image/*",
+                      class: "d-none",
+                      id: "file-input",
+                      onchange: "this.form.requestSubmit();" %>
+                  <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('file-input').click()">
                     <i class="bi bi-upload"></i> 画像をアップロード
                   </button>
-                </div>
-                <%= f.file_field :images,
-                    multiple: true,
-                    accept: "image/*",
-                    class: "d-none",
-                    id: "edit-file-input",
-                    data: { action: "change->preview#showImages" } %>
-                <%= f.file_field :images,
-                    multiple: true,
-                    accept: "image/*",
-                    capture: "environment",
-                    class: "d-none",
-                    id: "edit-camera-input",
-                    data: { action: "change->preview#showImages" } %>
-                
-                <div id="current-images" class="row g-2 mb-3">
-                  <% if @answer.images.attached? %>
-                    <% @answer.images.each do |image| %>
-                      <div class="col-md-4 mb-3">
-                        <%= image_tag image, class: "img-fluid rounded" %>
-                      </div>
-                    <% end %>
-                  <% end %>
-                </div>
-                <div id="edit-image-preview" class="row g-2"></div>
+                <% end %>
               </div>
 
-              <%= f.submit "回答を更新", class: "btn btn-primary" %>
-            <% end %>
-
-            <%= content_for :head do %>
-              <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                  const preview = document.getElementById('edit-image-preview');
-                  
-                  function showImages(input) {
-                    preview.innerHTML = '';
-                    
-                    Array.from(input.files).forEach(file => {
-                      const reader = new FileReader();
-                      reader.onload = function(e) {
-                        const col = document.createElement('div');
-                        col.className = 'col-md-4 mb-3';
-                        
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.className = 'img-fluid rounded';
-                        
-                        col.appendChild(img);
-                        preview.appendChild(col);
-                      }
-                      reader.readAsDataURL(file);
-                    });
-                  }
-
-                  document.getElementById('edit-file-input').addEventListener('change', function() {
-                    showImages(this);
-                  });
-
-                  document.getElementById('edit-camera-input').addEventListener('change', function() {
-                    showImages(this);
-                  });
-                });
-              </script>
-            <% end %>
+              <!-- 登録済み画像の表示 -->
+              <% if @answer.images.attached? %>
+                <div class="mt-3">
+                  <h4 class="h6 mb-3">登録済みの画像</h4>
+                  <div class="row g-3">
+                    <% @answer.images.each do |image| %>
+                      <div class="col-md-4 col-sm-6">
+                        <div class="position-relative">
+                          <%= image_tag image, class: "img-fluid rounded shadow-sm" %>
+                          <%= button_to delete_image_student_homework_path(@homework, image_id: image.id),
+                              method: :delete,
+                              class: "position-absolute top-0 end-0 btn btn-danger btn-sm m-2 rounded-circle d-flex align-items-center justify-content-center shadow",
+                              style: "width: 32px; height: 32px;",
+                              data: { turbo_confirm: "この画像を削除してもよろしいですか？" } do %>
+                            <i class="bi bi-x"></i>
+                          <% end %>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
 
             <% if @answer.grades.any? %>
               <div class="card bg-light mb-3">
@@ -216,58 +202,21 @@
                     accept: "image/*",
                     class: "d-none",
                     id: "file-input",
-                    data: { action: "change->preview#showImages" } %>
+                    onchange: "this.form.requestSubmit();" %>
                 <%= f.file_field :images,
                     multiple: true,
                     accept: "image/*",
                     capture: "environment",
                     class: "d-none",
                     id: "camera-input",
-                    data: { action: "change->preview#showImages" } %>
-                <div id="image-preview" class="row g-2"></div>
+                    onchange: "this.form.requestSubmit();" %>
               </div>
 
               <%= f.submit "回答を提出", class: "btn btn-primary",
-                  data: { confirm: "提出後は編集できません。本当に提出しますか？" } %>
+                  data: { turbo_confirm: "提出後は編集できません。本当に提出しますか？" } %>
             <% end %>
           </div>
         </div>
-
-        <%= content_for :head do %>
-          <script>
-            document.addEventListener("DOMContentLoaded", function() {
-              const preview = document.getElementById('image-preview');
-              
-              function showImages(input) {
-                preview.innerHTML = '';
-                
-                Array.from(input.files).forEach(file => {
-                  const reader = new FileReader();
-                  reader.onload = function(e) {
-                    const col = document.createElement('div');
-                    col.className = 'col-md-4 mb-3';
-                    
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.className = 'img-fluid rounded';
-                    
-                    col.appendChild(img);
-                    preview.appendChild(col);
-                  }
-                  reader.readAsDataURL(file);
-                });
-              }
-
-              document.getElementById('file-input').addEventListener('change', function() {
-                showImages(this);
-              });
-
-              document.getElementById('camera-input').addEventListener('change', function() {
-                showImages(this);
-              });
-            });
-          </script>
-        <% end %>
       <% end %>
     </div>
   </div>

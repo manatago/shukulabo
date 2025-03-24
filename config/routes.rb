@@ -54,6 +54,7 @@ Rails.application.routes.draw do
         member do
           post :answer
           patch :update_answer
+          delete 'delete_image/:image_id', action: :delete_image, as: :delete_image
         end
       end
     end

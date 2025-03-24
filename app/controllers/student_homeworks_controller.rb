@@ -1,7 +1,7 @@
 class StudentHomeworksController < ApplicationController
-  before_action :set_homework, only: [:show, :answer, :update_answer]
-  before_action :check_homework_access, only: [:show, :answer, :update_answer]
-  before_action :set_answer, only: [:update_answer]
+  before_action :set_homework, only: [:show, :answer, :update_answer, :delete_image]
+  before_action :check_homework_access, only: [:show, :answer, :update_answer, :delete_image]
+  before_action :set_answer, only: [:update_answer, :delete_image]
 
   def index
     @homeworks = Homework.where(account_group: current_user.account_group)
@@ -13,7 +13,7 @@ class StudentHomeworksController < ApplicationController
     @answer = @homework.homework_answers.find_by(user: current_user)
     @can_answer = !@homework.expired? && @answer.nil?
   end
-
+ 
   def answer
     @answer = @homework.homework_answers.build(answer_params)
     @answer.user = current_user
@@ -26,10 +26,30 @@ class StudentHomeworksController < ApplicationController
   end
 
   def update_answer
-    if @answer.update(answer_params)
-      redirect_to student_homework_path(@homework), notice: "回答を更新しました"
-    else
-      render :show, status: :unprocessable_entity
+    # テキストの更新
+    if params[:homework_answer][:answer_text].present?
+      if @answer.update(answer_text: params[:homework_answer][:answer_text])
+        redirect_to student_homework_path(@homework), notice: "回答を更新しました"
+      else
+        render :show, status: :unprocessable_entity
+        return
+      end
+    end
+
+    # 新しい画像の追加
+    if params[:homework_answer][:images].present?
+      @answer.images.attach(params[:homework_answer][:images])
+      redirect_to student_homework_path(@homework), notice: "画像を追加しました"
+    end
+  end
+
+  def delete_image
+    image = @answer.images.find(params[:image_id])
+    image.purge
+    
+    respond_to do |format|
+      format.html { redirect_to student_homework_path(@homework), notice: "画像を削除しました" }
+      format.json { head :no_content }
     end
   end
 
