@@ -44,6 +44,9 @@ class HomeworksController < Admin::BaseController
     else
       @account_groups = AccountGroup.all
       @available_materials = TeachingMaterial.where(user: current_user).order(created_at: :desc)
+      @tags = Tag.joins(:teaching_material_tags)
+                .where(teaching_material_tags: { teaching_material_id: TeachingMaterial.where(user: current_user) })
+                .distinct
       render :new, status: :unprocessable_entity
     end
   end
