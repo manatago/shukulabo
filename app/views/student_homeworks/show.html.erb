@@ -58,6 +58,19 @@
       </div>
 
       <% if @answer %>
+        <%= content_for :head do %>
+          <style>
+            .delete-btn {
+              opacity: 0.9;
+            }
+            .delete-btn:hover {
+              opacity: 1;
+              transform: scale(1.05);
+              background-color: rgba(220, 53, 69, 0.9) !important;
+            }
+          </style>
+        <% end %>
+
         <div class="card mb-4">
           <div class="card-header">
             <h2 class="h4 mb-0">あなたの回答</h2>
@@ -117,10 +130,10 @@
                           <%= image_tag image, class: "img-fluid rounded shadow-sm" %>
                           <%= button_to delete_image_student_homework_path(@homework, image_id: image.id),
                               method: :delete,
-                              class: "position-absolute top-0 end-0 btn btn-danger btn-sm m-2 rounded-circle d-flex align-items-center justify-content-center shadow",
-                              style: "width: 32px; height: 32px;",
+                              class: "position-absolute top-0 end-0 btn btn-sm m-2 rounded-circle d-flex align-items-center justify-content-center shadow-sm delete-btn",
+                              style: "width: 40px; height: 40px; background-color: rgba(220, 53, 69, 0.75); backdrop-filter: blur(2px); transition: all 0.2s ease;",
                               data: { turbo_confirm: "この画像を削除してもよろしいですか？" } do %>
-                            <i class="bi bi-x"></i>
+                            <i class="bi bi-trash-fill text-white" style="font-size: 1.1rem;"></i>
                           <% end %>
                         </div>
                       </div>
