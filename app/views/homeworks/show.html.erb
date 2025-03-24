@@ -159,13 +159,11 @@
                                 <div class="row">
                                   <% answer.images.each do |image| %>
                                     <div class="col-md-6 mb-3">
-                                      <%= image_tag image,
-                                          class: "img-fluid rounded",
-                                          style: "cursor: pointer;",
-                                          data: {
-                                            action: "click->image-modal#show",
-                                            full_url: url_for(image)
-                                          } %>
+                                      <%= link_to url_for(image), target: "_blank" do %>
+                                        <%= image_tag image,
+                                            class: "img-fluid rounded",
+                                            style: "cursor: pointer;" %>
+                                      <% end %>
                                     </div>
                                   <% end %>
                                 </div>
