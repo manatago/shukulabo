@@ -5,6 +5,37 @@
         <h1>新規宿題作成</h1>
       </div>
 
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">教材を選択</h5>
+          
+          <%= form_with(url: new_homework_path, method: :get, data: { turbo_frame: "materials_list", turbo_action: "advance" }) do |f| %>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <div class="input-group">
+                  <%= f.text_field :search, value: params[:search], class: "form-control", placeholder: "タイトルで検索..." %>
+                  <%= f.submit "検索", class: "btn btn-outline-secondary" %>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="d-flex gap-2 flex-wrap">
+                  <%= link_to "全て", new_homework_path(search: params[:search]), class: "btn btn-sm #{params[:tag_id].blank? ? 'btn-primary' : 'btn-outline-secondary'}" %>
+                  <% @tags.each do |tag| %>
+                    <%= link_to tag.name,
+                        new_homework_path(tag_id: tag.id, search: params[:search]),
+                        class: "btn btn-sm #{params[:tag_id].to_s == tag.id.to_s ? 'btn-primary' : 'btn-outline-secondary'}" %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+
+          <%= turbo_frame_tag "materials_list" do %>
+            <%= render 'material_selection', homework: @homework, available_materials: @available_materials %>
+          <% end %>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-body">
           <%= render 'form', homework: @homework %>

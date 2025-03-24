@@ -1,4 +1,4 @@
-<%= form_with(model: homework, local: true, html: { class: "needs-validation" }) do |f| %>
+<%= form_with(model: homework, local: true, html: { class: "needs-validation", id: "homework_form" }) do |f| %>
   <% if homework.errors.any? %>
     <div class="alert alert-danger">
       <h4><%= pluralize(homework.errors.count, "個のエラー") %></h4>
@@ -28,51 +28,11 @@
     <div class="form-text">現在時刻より後の日時を指定してください</div>
   </div>
 
-  <div class="mb-4">
-    <label class="form-label">教材を選択</label>
-    <div class="table-responsive">
-      <table class="table table-hover">
-        <thead class="table-light">
-          <tr>
-            <th style="width: 50px;">選択</th>
-            <th>タイトル</th>
-            <th>タグ</th>
-            <th>作成日</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @available_materials.each do |material| %>
-            <tr>
-              <td>
-                <div class="form-check">
-                  <%= check_box_tag "teaching_material_ids[]",
-                      material.id,
-                      homework.teaching_materials.include?(material),
-                      id: "material_#{material.id}",
-                      class: "form-check-input" %>
-                </div>
-              </td>
-              <td>
-                <label for="material_<%= material.id %>" class="form-check-label">
-                  <%= material.title %>
-                </label>
-              </td>
-              <td>
-                <% material.tags.each do |tag| %>
-                  <span class="badge bg-secondary"><%= tag.name %></span>
-                <% end %>
-              </td>
-              <td><%= l material.created_at, format: :short %></td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
-    <div class="form-text">※ チェックした順番で問題が表示されます</div>
-  </div>
 
   <div class="d-flex justify-content-between">
     <%= link_to "キャンセル", homeworks_path, class: "btn btn-outline-secondary" %>
-    <%= f.submit homework.new_record? ? "作成" : "更新", class: "btn btn-primary" %>
+    <%= f.submit homework.new_record? ? "作成" : "更新",
+        class: "btn btn-primary",
+        data: { action: "material-selection#clearStorage" } %>
   </div>
 <% end %>

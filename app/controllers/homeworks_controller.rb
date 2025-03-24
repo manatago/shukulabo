@@ -13,7 +13,19 @@ class HomeworksController < Admin::BaseController
   def new
     @homework = current_user.homeworks.build
     @account_groups = AccountGroup.all
-    @available_materials = TeachingMaterial.where(user: current_user).order(created_at: :desc)
+    @available_materials = TeachingMaterial.where(user: current_user)
+    
+    # 検索条件の適用
+    @available_materials = @available_materials.where('title LIKE ?', "%#{params[:search]}%") if params[:search].present?
+    @available_materials = @available_materials.joins(:tags).where(tags: { id: params[:tag_id] }) if params[:tag_id].present?
+    
+    # 並び順とページネーション
+    @available_materials = @available_materials.order(created_at: :desc).page(params[:page]).per(30)
+    
+    # 全てのタグを取得（フィルター用）
+    @tags = Tag.joins(:teaching_material_tags)
+              .where(teaching_material_tags: { teaching_material_id: TeachingMaterial.where(user: current_user) })
+              .distinct
   end
 
   def edit
