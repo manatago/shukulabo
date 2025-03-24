@@ -28,7 +28,13 @@
         <%= f.label :question_image, class: "form-label" %>
         <% if teaching_material.question_image.attached? %>
           <div class="mb-2">
-            <%= image_tag teaching_material.question_image, class: "img-fluid rounded", style: "max-height: 200px" %>
+            <%= image_tag teaching_material.question_image,
+                class: "img-fluid rounded",
+                style: "max-height: 200px; cursor: pointer;",
+                data: {
+                  action: "click->image-modal#show",
+                  full_url: url_for(teaching_material.question_image)
+                } %>
           </div>
         <% end %>
         <%= f.file_field :question_image, class: "form-control", accept: "image/*" %>
@@ -47,7 +53,13 @@
         <%= f.label :answer_image, "解説用画像", class: "form-label" %>
         <% if teaching_material.answer_image.attached? %>
           <div class="mb-2">
-            <%= image_tag teaching_material.answer_image, class: "img-fluid rounded", style: "max-height: 200px" %>
+            <%= image_tag teaching_material.answer_image,
+                class: "img-fluid rounded",
+                style: "max-height: 200px; cursor: pointer;",
+                data: {
+                  action: "click->image-modal#show",
+                  full_url: url_for(teaching_material.answer_image)
+                } %>
           </div>
         <% end %>
         <%= f.file_field :answer_image, class: "form-control", accept: "image/*" %>

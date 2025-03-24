@@ -29,7 +29,13 @@
               <% material = homework_material.teaching_material %>
               <% if material.question_image.attached? %>
                 <div class="mb-3">
-                  <%= image_tag material.question_image, class: "img-fluid rounded" %>
+                  <%= image_tag material.question_image,
+                      class: "img-fluid rounded",
+                      style: "cursor: pointer;",
+                      data: {
+                        action: "click->image-modal#show",
+                        full_url: url_for(material.question_image)
+                      } %>
                 </div>
               <% end %>
               
@@ -153,7 +159,13 @@
                                 <div class="row">
                                   <% answer.images.each do |image| %>
                                     <div class="col-md-6 mb-3">
-                                      <%= image_tag image, class: "img-fluid rounded" %>
+                                      <%= image_tag image,
+                                          class: "img-fluid rounded",
+                                          style: "cursor: pointer;",
+                                          data: {
+                                            action: "click->image-modal#show",
+                                            full_url: url_for(image)
+                                          } %>
                                     </div>
                                   <% end %>
                                 </div>

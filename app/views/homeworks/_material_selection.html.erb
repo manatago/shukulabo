@@ -30,8 +30,12 @@
             <% if material.question_image.attached? %>
               <%= image_tag(material.question_image,
                           class: "img-thumbnail",
-                          style: "max-height: 50px;",
-                          loading: "lazy") %>
+                          style: "max-height: 50px; cursor: pointer;",
+                          loading: "lazy",
+                          data: {
+                            action: "click->image-modal#show",
+                            full_url: url_for(material.question_image)
+                          }) %>
             <% end %>
           </td>
           <td>

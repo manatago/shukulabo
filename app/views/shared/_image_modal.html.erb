@@ -1,4 +1,5 @@
-<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true"
+    data-image-modal-target="modal">
   <div class="modal-dialog modal-fullscreen">
     <div class="modal-content">
       <div class="modal-header">
@@ -6,7 +7,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body d-flex align-items-center justify-content-center bg-dark">
-        <img src="" class="img-fluid" id="modalImage" style="max-height: 95vh; width: auto;">
+        <img src="" class="img-fluid" style="max-height: 95vh; width: 100%; object-fit: contain;" data-image-modal-target="modalImage">
       </div>
     </div>
   </div>

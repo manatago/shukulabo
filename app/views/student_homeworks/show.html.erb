@@ -41,7 +41,13 @@
               <% material = homework_material.teaching_material %>
               <% if material.question_image.attached? %>
                 <div class="mb-3">
-                  <%= image_tag material.question_image, class: "img-fluid rounded" %>
+                  <%= image_tag material.question_image,
+                      class: "img-fluid rounded",
+                      style: "cursor: pointer;",
+                      data: {
+                        action: "click->image-modal#show",
+                        full_url: url_for(material.question_image)
+                      } %>
                 </div>
               <% end %>
               
@@ -127,7 +133,13 @@
                     <% @answer.images.each do |image| %>
                       <div class="col-md-4 col-sm-6">
                         <div class="position-relative">
-                          <%= image_tag image, class: "img-fluid rounded shadow-sm" %>
+                          <%= image_tag image,
+                              class: "img-fluid rounded shadow-sm",
+                              style: "cursor: pointer;",
+                              data: {
+                                action: "click->image-modal#show",
+                                full_url: url_for(image)
+                              } %>
                           <%= button_to delete_image_student_homework_path(@homework, image_id: image.id),
                               method: :delete,
                               class: "position-absolute top-0 end-0 btn btn-sm m-2 rounded-circle d-flex align-items-center justify-content-center shadow-sm delete-btn",
