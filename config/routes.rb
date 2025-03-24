@@ -53,6 +53,7 @@ Rails.application.routes.draw do
       resources :student_homeworks, only: [:index, :show] do
         member do
           post :answer
+          patch :update_answer
         end
       end
     end

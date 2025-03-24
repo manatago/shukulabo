@@ -1,7 +1,7 @@
 class StudentHomeworksController < ApplicationController
-  before_action :set_homework, only: [:show, :answer]
-  before_action :check_homework_access, only: [:show, :answer]
-  before_action :check_deadline, only: [:answer]
+  before_action :set_homework, only: [:show, :answer, :update_answer]
+  before_action :check_homework_access, only: [:show, :answer, :update_answer]
+  before_action :set_answer, only: [:update_answer]
 
   def index
     @homeworks = Homework.where(account_group: current_user.account_group)
@@ -20,6 +20,14 @@ class StudentHomeworksController < ApplicationController
 
     if @answer.save
       redirect_to student_homework_path(@homework), notice: "回答を提出しました"
+    else
+      render :show, status: :unprocessable_entity
+    end
+  end
+
+  def update_answer
+    if @answer.update(answer_params)
+      redirect_to student_homework_path(@homework), notice: "回答を更新しました"
     else
       render :show, status: :unprocessable_entity
     end
@@ -45,5 +53,9 @@ class StudentHomeworksController < ApplicationController
 
   def answer_params
     params.require(:homework_answer).permit(:answer_text, images: [])
+  end
+
+  def set_answer
+    @answer = @homework.homework_answers.find_by!(user: current_user)
   end
 end
