@@ -11,18 +11,24 @@
 
     <script>
       (function() {
-        if (window.location.pathname === '/' || window.location.pathname.startsWith('/auth/')) {
+        // リダイレクト済みかチェック
+        var redirected = sessionStorage.getItem('browser_redirected');
+        
+        if (!redirected && (window.location.pathname === '/' || window.location.pathname.startsWith('/auth/'))) {
           if (/Line/.test(navigator.userAgent)) {
+            // リダイレクトフラグを設定
+            sessionStorage.setItem('browser_redirected', 'true');
+            
             // ページの表示を防止
             document.documentElement.style.display = 'none';
             
-            // 現在のURLを取得
+            // 現在のURLを取得（クエリパラメータを保持）
             var url = window.location.href;
             
             // iOSの場合
             if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-              // 直接URLを設定してSafariで開く
-              location.href = url;
+              // 外部ブラウザで強制的に開く
+              window.open(url, '_system');
             }
             // Androidの場合
             else {
