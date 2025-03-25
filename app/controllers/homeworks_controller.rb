@@ -36,14 +36,22 @@ class HomeworksController < Admin::BaseController
   end
 
   def create
-    @homework = current_user.homeworks.build(homework_params)
+    @homework = current_user.homeworks.build(homework_params.except(:teaching_material_ids))
+    @homework.teaching_material_ids = params[:teaching_material_ids]
 
     if @homework.save
-      create_homework_materials
       redirect_to @homework, notice: t('notices.created', model: Homework.model_name.human)
     else
       @account_groups = AccountGroup.all
-      @available_materials = TeachingMaterial.where(user: current_user).order(created_at: :desc)
+      @available_materials = TeachingMaterial.where(user: current_user)
+      
+      # 検索条件の適用
+      @available_materials = @available_materials.where('title LIKE ?', "%#{params[:search]}%") if params[:search].present?
+      @available_materials = @available_materials.joins(:tags).where(tags: { id: params[:tag_id] }) if params[:tag_id].present?
+      
+      # 並び順とページネーション
+      @available_materials = @available_materials.order(created_at: :desc).page(params[:page]).per(30)
+      
       @tags = Tag.joins(:teaching_material_tags)
                 .where(teaching_material_tags: { teaching_material_id: TeachingMaterial.where(user: current_user) })
                 .distinct
@@ -52,9 +60,10 @@ class HomeworksController < Admin::BaseController
   end
 
   def update
-    if @homework.update(homework_params)
-      @homework.homework_materials.destroy_all
-      create_homework_materials
+    @homework.assign_attributes(homework_params.except(:teaching_material_ids))
+    @homework.teaching_material_ids = params[:teaching_material_ids]
+
+    if @homework.save
       redirect_to @homework, notice: t('notices.updated', model: Homework.model_name.human)
     else
       @account_groups = AccountGroup.all
@@ -99,17 +108,6 @@ class HomeworksController < Admin::BaseController
   end
 
   def homework_params
-    params.require(:homework).permit(:title, :deadline, :account_group_id)
-  end
-
-  def create_homework_materials
-    return unless params[:teaching_material_ids]
-
-    params[:teaching_material_ids].each_with_index do |material_id, index|
-      @homework.homework_materials.create!(
-        teaching_material_id: material_id,
-        position: index
-      )
-    end
+    params.require(:homework).permit(:title, :deadline, :account_group_id, teaching_material_ids: [])
   end
 end

@@ -10,6 +10,7 @@ class Homework < ApplicationRecord
   validates :deadline, presence: true
   validates :account_group_id, presence: true
   validate :deadline_must_be_future
+  validate :must_have_materials
 
   # 指定ユーザーの回答を取得
   def answer_by(user)
@@ -59,6 +60,13 @@ class Homework < ApplicationRecord
     
     if deadline <= Time.current
       errors.add(:deadline, "は現在時刻より後に設定してください")
+    end
+  end
+
+  def must_have_materials
+    # パラメータとして渡されたteaching_material_idsをチェック
+    if teaching_material_ids.blank?
+      errors.add(:base, "少なくとも1つの問題を選択してください")
     end
   end
 end
