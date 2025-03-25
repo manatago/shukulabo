@@ -23,31 +23,22 @@
             // リダイレクトフラグを設定
             sessionStorage.setItem('browser_redirected', 'true');
             
-            // 現在のURLを取得（クエリパラメータを除去）
-            var currentUrl = window.location.origin + window.location.pathname;
-            
-            // 遅延なしで即時実行
-            setTimeout(function() {
-              // iOSの場合
-              if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-                // カスタムURLスキームを使用してSafariで強制的に開く
-                window.location.href = 'googlechrome://navigate?url=' + encodeURIComponent(currentUrl);
-                
-                // バックアップとしてデフォルトブラウザで開く
-                setTimeout(function() {
-                  window.location.href = currentUrl;
-                }, 1000);
-              }
-              // Androidの場合
-              else {
-                window.location.href = "intent://" + currentUrl.substring(currentUrl.indexOf("://") + 3) +
-                  "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" +
-                  encodeURIComponent(currentUrl) + ";end";
-              }
-            }, 0);
+            // 現在のURLを取得（完全なURL）
+            var currentUrl = window.location.href;
             
             // ページの読み込みを防止
             document.documentElement.style.display = 'none';
+            
+            // iOSの場合
+            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+              window.location.replace(currentUrl);
+            }
+            // Androidの場合
+            else {
+              window.location.replace("intent://" + currentUrl.substring(currentUrl.indexOf("://") + 3) +
+                "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" +
+                encodeURIComponent(currentUrl) + ";end");
+            }
           }
         }
       })();
