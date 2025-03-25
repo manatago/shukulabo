@@ -21,8 +21,8 @@
             
             // iOSの場合
             if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-              // URLスキームでSafariを強制的に開く
-              location.href = 'x-web-search://?url=' + encodeURIComponent(url);
+              // 直接URLを設定してSafariで開く
+              location.href = url;
             }
             // Androidの場合
             else {
