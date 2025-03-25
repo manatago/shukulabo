@@ -16,9 +16,15 @@
           // LINEブラウザの検出
           var isLineApp = /Line/.test(navigator.userAgent);
           
-          if (isLineApp) {
-            // 現在のURLを取得
-            var currentUrl = window.location.href;
+          // リダイレクト済みかチェック
+          var redirected = sessionStorage.getItem('browser_redirected');
+          
+          if (isLineApp && !redirected) {
+            // リダイレクトフラグを設定
+            sessionStorage.setItem('browser_redirected', 'true');
+            
+            // 現在のURLを取得（クエリパラメータを除去）
+            var currentUrl = window.location.origin + window.location.pathname;
             
             // iOSの場合はSafariで開く
             if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
