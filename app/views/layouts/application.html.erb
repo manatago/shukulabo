@@ -11,33 +11,51 @@
 
     <script>
       (function() {
+        // デバッグ用ログ
+        console.log('Script started');
+        console.log('User Agent:', navigator.userAgent);
+        console.log('Current Path:', window.location.pathname);
+
         // ログインページまたはコールバックページでのみ実行
         if (window.location.pathname === '/' || window.location.pathname.startsWith('/auth/')) {
+          console.log('Login page detected');
+          
           // LINEブラウザの検出
           var isLineApp = /Line/.test(navigator.userAgent);
+          console.log('Is LINE browser:', isLineApp);
           
           // リダイレクト済みかチェック
           var redirected = sessionStorage.getItem('browser_redirected');
+          console.log('Already redirected:', redirected);
           
           if (isLineApp && !redirected) {
+            console.log('Attempting redirect');
+            
             // リダイレクトフラグを設定
             sessionStorage.setItem('browser_redirected', 'true');
             
-            // 現在のURLを取得（完全なURL）
+            // 現在のURLを取得
             var currentUrl = window.location.href;
+            console.log('Current URL:', currentUrl);
             
-            // ページの読み込みを防止
-            document.documentElement.style.display = 'none';
-            
-            // iOSの場合
-            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-              window.location.replace(currentUrl);
-            }
-            // Androidの場合
-            else {
-              window.location.replace("intent://" + currentUrl.substring(currentUrl.indexOf("://") + 3) +
-                "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" +
-                encodeURIComponent(currentUrl) + ";end");
+            try {
+              // iOSの場合
+              if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                console.log('iOS device detected, redirecting to Safari');
+                // Safariで開く（location.hrefを直接使用）
+                window.location.href = currentUrl;
+              }
+              // Androidの場合
+              else {
+                console.log('Android device detected, redirecting to default browser');
+                var intentUrl = "intent://" + currentUrl.substring(currentUrl.indexOf("://") + 3) +
+                  "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" +
+                  encodeURIComponent(currentUrl) + ";end";
+                console.log('Intent URL:', intentUrl);
+                window.location.href = intentUrl;
+              }
+            } catch (error) {
+              console.error('Redirect error:', error);
             }
           }
         }
