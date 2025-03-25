@@ -202,27 +202,41 @@
                                        class="accordion-collapse collapse <%= 'show' if index.zero? %>"
                                        data-bs-parent="#problemsAccordion<%= answer.id %>">
                                     <div class="accordion-body">
-                                      <% if material.question_text.present? %>
-                                        <div class="card bg-light mb-3">
-                                          <div class="card-header">
-                                            <h6 class="mb-0">問題</h6>
-                                          </div>
-                                          <div class="card-body">
-                                            <%= simple_format material.question_text %>
-                                          </div>
+                                      <div class="row mb-3">
+                                        <div class="col">
+                                          <% if material.question_text.present? %>
+                                            <div class="card bg-light h-100">
+                                              <div class="card-header d-flex justify-content-between align-items-center">
+                                                <h6 class="mb-0">問題</h6>
+                                                <% if material.question_image.attached? %>
+                                                  <%= image_tag material.question_image,
+                                                      class: "img-fluid",
+                                                      style: "max-height: 30px; cursor: pointer;",
+                                                      data: {
+                                                        action: "click->image-modal#show",
+                                                        full_url: url_for(material.question_image)
+                                                      } %>
+                                                <% end %>
+                                              </div>
+                                              <div class="card-body">
+                                                <%= simple_format material.question_text %>
+                                              </div>
+                                            </div>
+                                          <% end %>
                                         </div>
-                                      <% end %>
-
-                                      <% if material.correct_answer.present? %>
-                                        <div class="card border-success mb-3">
-                                          <div class="card-header bg-success text-white">
-                                            <h6 class="mb-0">正答</h6>
-                                          </div>
-                                          <div class="card-body">
-                                            <%= simple_format material.correct_answer %>
-                                          </div>
+                                        <div class="col">
+                                          <% if material.correct_answer.present? %>
+                                            <div class="card border-success h-100">
+                                              <div class="card-header bg-success text-white">
+                                                <h6 class="mb-0">正答</h6>
+                                              </div>
+                                              <div class="card-body">
+                                                <%= simple_format material.correct_answer %>
+                                              </div>
+                                            </div>
+                                          <% end %>
                                         </div>
-                                      <% end %>
+                                      </div>
 
                                       <%= form_with model: grade || HomeworkAnswerGrade.new,
                                                   url: grade_answer_homework_path(@homework, answer, teaching_material_id: material.id),
