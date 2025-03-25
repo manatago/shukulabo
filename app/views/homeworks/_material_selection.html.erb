@@ -1,6 +1,16 @@
-<div class="table-responsive"
-     data-controller="material-selection"
-     data-action="turbo:frame-load->material-selection#loadSelectedMaterials">
+<div data-controller="material-selection"
+     data-action="turbo:frame-load->material-selection#setupCheckboxes">
+
+  <div class="card mb-3">
+    <div class="card-header bg-light">
+      <h5 class="card-title mb-0">現在選択中の問題</h5>
+    </div>
+    <div class="card-body" data-material-selection-target="selectedList">
+      <div class="text-muted">問題を選択してください</div>
+    </div>
+  </div>
+
+  <div class="table-responsive">
   <table class="table table-hover">
     <thead class="table-light">
       <tr>
@@ -24,7 +34,7 @@
                   form: "homework_form",
                   data: {
                     material_selection_target: "checkbox",
-                    action: "material-selection#saveSelectedMaterials"
+                    action: "material-selection#handleChange"
                   } %>
             </div>
           </td>

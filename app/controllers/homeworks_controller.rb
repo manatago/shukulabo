@@ -37,7 +37,8 @@ class HomeworksController < Admin::BaseController
 
   def create
     @homework = current_user.homeworks.build(homework_params.except(:teaching_material_ids))
-    @homework.teaching_material_ids = params[:teaching_material_ids]
+    # 重複を排除して順序を維持する
+    @homework.teaching_material_ids = params[:teaching_material_ids]&.uniq || []
 
     if @homework.save
       redirect_to @homework, notice: t('notices.created', model: Homework.model_name.human)
@@ -109,5 +110,11 @@ class HomeworksController < Admin::BaseController
 
   def homework_params
     params.require(:homework).permit(:title, :deadline, :account_group_id, teaching_material_ids: [])
+  end
+
+  def material_titles
+    material_ids = params[:ids].split(',')
+    materials = TeachingMaterial.where(id: material_ids, user: current_user)
+    render json: materials.pluck(:id, :title).to_h
   end
 end
