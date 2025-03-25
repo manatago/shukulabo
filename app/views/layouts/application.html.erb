@@ -11,28 +11,23 @@
 
     <script>
       (function() {
-        // LINEブラウザの検出（ユーザーエージェントに "Line" が含まれる）
-        var isLineApp = /Line/.test(navigator.userAgent);
-        
-        // 既にリダイレクトされていないことを確認
-        var isRedirected = sessionStorage.getItem('redirected');
-        
-        if (isLineApp && !isRedirected) {
-          // リダイレクトフラグを設定
-          sessionStorage.setItem('redirected', 'true');
+        // ログインページまたはコールバックページでのみ実行
+        if (window.location.pathname === '/' || window.location.pathname.startsWith('/auth/')) {
+          // LINEブラウザの検出
+          var isLineApp = /Line/.test(navigator.userAgent);
           
-          // 現在のURLを取得
-          var currentUrl = window.location.href;
-          
-          // iOSの場合
-          if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-            // Safariで開く
-            window.location.href = currentUrl;
-          }
-          // Androidの場合
-          else {
-            // デフォルトブラウザで開く
-            window.location.href = "intent://" + currentUrl.substring(currentUrl.indexOf("://") + 3) + "#Intent;scheme=https;S.browser_fallback_url=" + encodeURIComponent(currentUrl) + ";end";
+          if (isLineApp) {
+            // 現在のURLを取得
+            var currentUrl = window.location.href;
+            
+            // iOSの場合はSafariで開く
+            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+              window.location.href = currentUrl;
+            }
+            // Androidの場合はデフォルトブラウザで開く
+            else {
+              window.location.href = "intent://" + currentUrl.substring(currentUrl.indexOf("://") + 3) + "#Intent;scheme=https;S.browser_fallback_url=" + encodeURIComponent(currentUrl) + ";end";
+            }
           }
         }
       })();
