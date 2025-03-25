@@ -51,10 +51,19 @@
             </ul>
             
             <div class="navbar-nav">
-              <span class="nav-item nav-link text-light">
-                <%= current_user.name %>
-              </span>
-              <%= link_to "ログアウト", logout_path, class: "nav-link" %>
+              <% if impersonating? %>
+                <span class="nav-item nav-link text-warning">
+                  <%= true_user.name %>が<%= current_user.name %>として操作中
+                </span>
+                <%= link_to "ログアウトして管理者に戻る",
+                    logout_path,
+                    class: "nav-link" %>
+              <% else %>
+                <span class="nav-item nav-link text-light">
+                  <%= current_user.name %>
+                </span>
+                <%= link_to "ログアウト", logout_path, class: "nav-link" %>
+              <% end %>
             </div>
           </div>
         <% end %>

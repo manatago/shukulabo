@@ -52,6 +52,16 @@
                           } do %>
                         <%= user.admin? ? "管理者権限削除" : "管理者権限付与" %>
                       <% end %>
+                      <% unless user.admin? %>
+                        <%= button_to impersonate_admin_user_path(user),
+                            method: :post,
+                            class: "btn btn-sm btn-outline-info",
+                            data: {
+                              turbo_confirm: "#{user.name}として操作を開始しますか？"
+                            } do %>
+                          このユーザーとして操作
+                        <% end %>
+                      <% end %>
                     <% end %>
                   </div>
                 </td>
