@@ -134,12 +134,12 @@
                 </tr>
 
                 <!-- 採点モーダル -->
-                <div class="modal fade" id="gradeModal<%= answer.id %>" tabindex="-1">
+                <div class="modal fade" id="gradeModal<%= answer.id %>" tabindex="-1" role="dialog" aria-labelledby="gradeModalLabel<%= answer.id %>">
                   <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                       <div class="modal-header">
-                        <h5 class="modal-title"><%= answer.user.name %>さんの回答を採点</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        <h5 class="modal-title" id="gradeModalLabel<%= answer.id %>"><%= answer.user.name %>さんの回答を採点</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
                       </div>
                       <div class="modal-body">
                         <div class="row">
@@ -178,13 +178,14 @@
                                 <% material = homework_material.teaching_material %>
                                 <% grade = answer.grade_for(material) %>
                                 <div class="accordion-item">
-                                  <h2 class="accordion-header">
+                                  <h2 class="accordion-header" id="heading<%= answer.id %>_<%= material.id %>">
                                     <button class="accordion-button <%= 'collapsed' unless index.zero? %>"
                                             type="button"
                                             data-bs-toggle="collapse"
                                             data-bs-target="#problem<%= answer.id %>_<%= material.id %>"
                                             aria-expanded="<%= index.zero? %>"
-                                            aria-controls="problem<%= answer.id %>_<%= material.id %>">
+                                            aria-controls="problem<%= answer.id %>_<%= material.id %>"
+                                            aria-labelledby="heading<%= answer.id %>_<%= material.id %>">
                                       問題 <%= index + 1 %>
                                       <% if grade %>
                                         <span class="ms-2 badge <%= grade.score == 2 ? 'bg-success' : (grade.score == 1 ? 'bg-warning' : 'bg-danger') %>">
@@ -200,7 +201,9 @@
                                   </h2>
                                   <div id="problem<%= answer.id %>_<%= material.id %>"
                                        class="accordion-collapse collapse <%= 'show' if index.zero? %>"
-                                       data-bs-parent="#problemsAccordion<%= answer.id %>">
+                                       data-bs-parent="#problemsAccordion<%= answer.id %>"
+                                       role="region"
+                                       aria-labelledby="heading<%= answer.id %>_<%= material.id %>">
                                     <div class="accordion-body">
                                       <div class="row mb-3">
                                         <div class="col">
@@ -277,14 +280,27 @@
                                       <% end %>
 
                                       <script>
-                                        // フォーム送信後にモーダルを閉じる
-                                        document.getElementById('gradeForm<%= answer.id %>_<%= material.id %>').addEventListener('submit', function() {
+                                        // フォーム送信とフォーカス管理
+                                        (function() {
+                                          const form = document.getElementById('gradeForm<%= answer.id %>_<%= material.id %>');
                                           const modal = document.getElementById('gradeModal<%= answer.id %>');
-                                          const bootstrapModal = bootstrap.Modal.getInstance(modal);
-                                          setTimeout(function() {
-                                            bootstrapModal.hide();
-                                          }, 100);
-                                        });
+                                          const trigger = document.querySelector(`button[data-bs-target="#gradeModal<%= answer.id %>"]`);
+
+                                          form.addEventListener('submit', function() {
+                                            const bootstrapModal = bootstrap.Modal.getInstance(modal);
+                                            setTimeout(function() {
+                                              bootstrapModal.hide();
+                                              // モーダルを開いたボタンにフォーカスを戻す
+                                              trigger?.focus();
+                                            }, 100);
+                                          });
+
+                                          // モーダルが開いたときの処理
+                                          modal.addEventListener('shown.bs.modal', function() {
+                                            // 最初のラジオボタンにフォーカス
+                                            form.querySelector('input[type="radio"]')?.focus();
+                                          });
+                                        })();
                                       </script>
                                     </div>
                                   </div>
