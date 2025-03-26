@@ -5,6 +5,8 @@ class TeachingMaterialsController < ApplicationController
     @teaching_materials = current_user.teaching_materials
                                     .includes(:tags)
                                     .order(created_at: :desc)
+                                    .page(params[:page])
+                                    .per(30)
   end
 
   def show
@@ -41,14 +43,19 @@ class TeachingMaterialsController < ApplicationController
   end
 
   def search
-    if params[:tag]
-      @teaching_materials = current_user.teaching_materials
-                                      .joins(:tags)
-                                      .where(tags: { name: params[:tag] })
-                                      .distinct
+    @teaching_materials = if params[:tag]
+      current_user.teaching_materials
+                 .joins(:tags)
+                 .where(tags: { name: params[:tag] })
+                 .distinct
     else
-      @teaching_materials = current_user.teaching_materials
+      current_user.teaching_materials
     end
+
+    @teaching_materials = @teaching_materials.includes(:tags)
+                                           .order(created_at: :desc)
+                                           .page(params[:page])
+                                           .per(30)
     render :index
   end
 

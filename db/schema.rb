@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_03_23_131417) do
+ActiveRecord::Schema[7.2].define(version: 2025_03_26_132500) do
   create_table "account_groups", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -89,6 +89,16 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_23_131417) do
     t.index ["user_id"], name: "index_homeworks_on_user_id"
   end
 
+  create_table "login_histories", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "ip_address"
+    t.string "user_agent"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_login_histories_on_created_at"
+    t.index ["user_id"], name: "index_login_histories_on_user_id"
+  end
+
   create_table "tags", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -139,6 +149,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_23_131417) do
   add_foreign_key "homework_materials", "teaching_materials"
   add_foreign_key "homeworks", "account_groups"
   add_foreign_key "homeworks", "users"
+  add_foreign_key "login_histories", "users"
   add_foreign_key "teaching_material_tags", "tags"
   add_foreign_key "teaching_material_tags", "teaching_materials"
   add_foreign_key "teaching_materials", "users"

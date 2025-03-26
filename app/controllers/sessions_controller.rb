@@ -13,6 +13,7 @@ class SessionsController < ApplicationController
     end
 
     session[:user_id] = user.id
+    LoginHistory.create_history(user, request)
     redirect_to session.delete(:return_to) || dashboard_path, notice: 'ログインしました'
   end
 

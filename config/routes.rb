@@ -26,6 +26,7 @@ Rails.application.routes.draw do
       end
     end
     resources :account_groups
+    resources :login_histories, only: [:index]
   end
   
   # 教材管理
