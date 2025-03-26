@@ -8,8 +8,12 @@ class ApplicationController < ActionController::Base
   private
 
   def authenticate_user!
+    return if request.path == root_path || request.path == '/auth/google_oauth2/callback'
+
     unless user_signed_in?
+      session[:return_to] = request.url if request.get?
       redirect_to root_path, alert: 'ログインが必要です'
+      return false
     end
   end
 
