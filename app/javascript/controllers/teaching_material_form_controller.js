@@ -3,12 +3,8 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["title", "questionImage"]
 
-  connect() {
+  questionImageTargetConnected() {
     this.questionImageTarget.addEventListener("change", this.handleImageChange.bind(this))
-  }
-
-  disconnect() {
-    this.questionImageTarget.removeEventListener("change", this.handleImageChange.bind(this))
   }
 
   handleImageChange(event) {
