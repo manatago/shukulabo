@@ -43,9 +43,8 @@ Rails.application.routes.draw do
     member do
       get :answers
       patch 'answers/:answer_id/grade/:teaching_material_id', action: :grade_answer, as: :grade_answer
-    end
-    collection do
-      get :material_titles
+      post :add_material
+      delete :remove_material
     end
   end
 

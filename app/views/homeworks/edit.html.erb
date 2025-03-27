@@ -1,15 +1,139 @@
-<div class="container">
-  <div class="row justify-content-center">
-    <div class="col-12">
-      <div class="mb-4 d-flex justify-content-between align-items-center">
-        <h1>宿題を編集</h1>
+<div class="container my-4">
+  <h1>宿題の編集</h1>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">宿題の情報</h5>
+      <dl class="row">
+        <dt class="col-sm-3">タイトル</dt>
+        <dd class="col-sm-9"><%= @homework.title %></dd>
+        
+        <dt class="col-sm-3">生徒グループ</dt>
+        <dd class="col-sm-9"><%= @homework.account_group.name %></dd>
+        
+        <dt class="col-sm-3">期限</dt>
+        <dd class="col-sm-9"><%= l @homework.deadline, format: :long %></dd>
+      </dl>
+      
+      <%= link_to "宿題の基本情報を編集", edit_homework_path(@homework, basic: true), class: "btn btn-outline-secondary btn-sm" %>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">登録されている問題 (<%= @homework.teaching_materials.count %>)</h5>
+      <% if @homework.teaching_materials.any? %>
+        <div class="list-group">
+          <% @homework.homework_materials.includes(:teaching_material).order(:position).each do |material| %>
+            <div class="list-group-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <span class="badge bg-secondary me-2">問題<%= material.position + 1 %></span>
+                  <%= material.teaching_material.title %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-muted">まだ問題が登録されていません。</p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">問題を追加</h5>
+
+      <div class="mb-3">
+        <%= form_with(url: edit_homework_path(@homework), method: :get, local: true) do |f| %>
+          <div class="input-group">
+            <%= f.text_field :search, value: params[:search], class: "form-control", placeholder: "問題のタイトルで検索" %>
+            <% if params[:tag_id].present? %>
+              <%= f.hidden_field :tag_id, value: params[:tag_id] %>
+            <% end %>
+            <%= f.submit "検索", class: "btn btn-outline-secondary" %>
+          </div>
+        <% end %>
       </div>
 
-      <div class="card">
-        <div class="card-body">
-          <%= render 'form', homework: @homework %>
+      <div class="mb-3">
+        <div class="btn-group">
+          <%= link_to "全て", edit_homework_path(@homework, search: params[:search]), 
+              class: "btn btn-#{params[:tag_id].blank? ? 'secondary' : 'outline-secondary'} btn-sm" %>
+          <% @tags.each do |tag| %>
+            <%= link_to tag.name, edit_homework_path(@homework, tag_id: tag.id, search: params[:search]), 
+                class: "btn btn-#{params[:tag_id].to_i == tag.id ? 'secondary' : 'outline-secondary'} btn-sm" %>
+          <% end %>
         </div>
       </div>
+
+      <div class="mb-4">
+        <h6 class="card-subtitle mb-3">問題一覧</h6>
+        <div class="list-group">
+          <% @available_materials.each do |material| %>
+            <div class="list-group-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <%= material.title %>
+                  <% material.tags.each do |tag| %>
+                    <span class="badge bg-secondary ms-1"><%= tag.name %></span>
+                  <% end %>
+                </div>
+                <% if @homework.teaching_materials.include?(material) %>
+                  <span class="badge bg-secondary">追加済み</span>
+                <% else %>
+                  <%= button_to "追加", add_material_homework_path(@homework, material_id: material.id),
+                      class: "btn btn-primary btn-sm",
+                      method: :post %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="mt-3">
+          <%= paginate @available_materials %>
+        </div>
+      </div>
+
+      <% if @repeat_materials.any? %>
+        <div class="mt-4">
+          <h6 class="card-subtitle mb-3">
+            <span class="me-2">リピート対象の問題</span>
+            <small class="text-muted">この生徒グループの過去の宿題で復習が必要とされた問題</small>
+          </h6>
+          <div class="list-group">
+            <% @repeat_materials.each do |material| %>
+              <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <%= material.title %>
+                    <% material.tags.each do |tag| %>
+                      <span class="badge bg-secondary ms-1"><%= tag.name %></span>
+                    <% end %>
+                    <span class="badge bg-info ms-2">リピート</span>
+                    <small class="text-muted ms-2">
+                      （期限：<%= l material.homework_deadline, format: :short %>）
+                    </small>
+                  </div>
+                  <% if @homework.teaching_materials.include?(material) %>
+                    <span class="badge bg-secondary">追加済み</span>
+                  <% else %>
+                    <%= button_to "追加", add_material_homework_path(@homework, material_id: material.id),
+                        class: "btn btn-primary btn-sm",
+                        method: :post %>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
     </div>
+  </div>
+
+  <div class="mt-4">
+    <%= link_to "宿題一覧に戻る", homeworks_path, class: "btn btn-outline-secondary" %>
   </div>
 </div>

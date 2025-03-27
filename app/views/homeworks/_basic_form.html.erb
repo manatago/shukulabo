@@ -1,0 +1,58 @@
+<div class="container my-4">
+  <h1>宿題の基本情報を編集</h1>
+
+  <%= form_with(model: homework, local: true, html: { 
+    class: "needs-validation", 
+    data: { controller: "homework-form" }
+  }) do |f| %>
+    <% if homework.errors.any? %>
+      <div class="alert alert-danger">
+        <h4><%= pluralize(homework.errors.count, "個のエラー") %></h4>
+        <ul>
+          <% homework.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="mb-3">
+      <%= f.label :title, class: "form-label" %>
+      <%= f.text_field :title, 
+          class: "form-control", 
+          required: true,
+          readonly: true,
+          data: { homework_form_target: "title" } %>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :account_group_id, class: "form-label" %>
+      <%= f.collection_select :account_group_id, @account_groups, :id, :name,
+          { prompt: "生徒グループを選択" },
+          { class: "form-select", 
+            required: true,
+            data: { 
+              homework_form_target: "group",
+              action: "change->homework-form#updateTitle"
+            }
+          } %>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :deadline, class: "form-label" %>
+      <%= f.datetime_local_field :deadline, 
+          class: "form-control", 
+          required: true,
+          data: { 
+            homework_form_target: "deadline",
+            action: "change->homework-form#updateTitle"
+          } %>
+      <div class="form-text">現在時刻より後の日時を指定してください</div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+      <%= link_to "キャンセル", edit_homework_path(homework), class: "btn btn-outline-secondary" %>
+      <%= f.submit "更新", class: "btn btn-primary" %>
+    </div>
+  <% end %>
+</div>

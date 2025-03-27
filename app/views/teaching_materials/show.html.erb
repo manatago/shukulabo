@@ -35,7 +35,7 @@
         </div>
 
         <div class="col-md-6 mb-4">
-          <h2 class="h4 mb-3">解答</h2>
+          <h2 class="h4 mb-3">解説</h2>
           <% if @teaching_material.answer_image.attached? %>
             <div class="mb-3">
               <%= image_tag @teaching_material.answer_image, class: "img-fluid rounded" %>
@@ -46,6 +46,15 @@
             <div class="card">
               <div class="card-body">
                 <%= simple_format @teaching_material.answer_text %>
+              </div>
+            </div>
+          <% end %>
+
+          <% if @teaching_material.correct_answer.present? %>
+            <h2 class="h4 mb-3 mt-4">正答</h2>
+            <div class="card">
+              <div class="card-body">
+                <%= simple_format @teaching_material.correct_answer %>
               </div>
             </div>
           <% end %>

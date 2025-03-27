@@ -13,37 +13,15 @@ class HomeworksController < Admin::BaseController
   def new
     @homework = current_user.homeworks.build
     @account_groups = AccountGroup.all
-    @available_materials = TeachingMaterial.where(user: current_user)
-    
-    # 検索条件の適用
-    @available_materials = @available_materials.where('title LIKE ?', "%#{params[:search]}%") if params[:search].present?
-    @available_materials = @available_materials.joins(:tags).where(tags: { id: params[:tag_id] }) if params[:tag_id].present?
-    
-    # 並び順とページネーション
-    @available_materials = @available_materials.order(created_at: :desc).page(params[:page]).per(30)
-    
-    # 全てのタグを取得（フィルター用）
-    @tags = Tag.joins(:teaching_material_tags)
-              .where(teaching_material_tags: { teaching_material_id: TeachingMaterial.where(user: current_user) })
-              .distinct
   end
 
   def edit
     @account_groups = AccountGroup.all
-    @available_materials = TeachingMaterial.where(user: current_user).order(created_at: :desc)
-  rescue ActiveRecord::RecordNotFound
-    redirect_to homeworks_path, alert: "指定された宿題は存在しないか、アクセス権限がありません"
-  end
 
-  def create
-    @homework = current_user.homeworks.build(homework_params.except(:teaching_material_ids))
-    # 重複を排除して順序を維持する
-    @homework.teaching_material_ids = params[:teaching_material_ids]&.uniq || []
-
-    if @homework.save
-      redirect_to @homework, notice: t('notices.created', model: Homework.model_name.human)
+    if params[:basic]
+      render :basic_edit
     else
-      @account_groups = AccountGroup.all
+      # 通常の教材一覧
       @available_materials = TeachingMaterial.where(user: current_user)
       
       # 検索条件の適用
@@ -53,9 +31,53 @@ class HomeworksController < Admin::BaseController
       # 並び順とページネーション
       @available_materials = @available_materials.order(created_at: :desc).page(params[:page]).per(30)
       
+      # 全てのタグを取得（フィルター用）
       @tags = Tag.joins(:teaching_material_tags)
                 .where(teaching_material_tags: { teaching_material_id: TeachingMaterial.where(user: current_user) })
                 .distinct
+
+      # リピート対象の問題を取得（既にソート済み）
+      @repeat_materials = Homework.repeat_materials_for_group(@homework.account_group)
+    end
+  rescue ActiveRecord::RecordNotFound
+    redirect_to homeworks_path, alert: "指定された宿題は存在しないか、アクセス権限がありません"
+  end
+
+  # 問題を追加
+  def add_material
+    @homework = current_user.homeworks.find(params[:id])
+    @material = TeachingMaterial.find(params[:material_id])
+    
+    unless @homework.teaching_materials.include?(@material)
+      position = @homework.homework_materials.maximum(:position).to_i + 1
+      @homework.homework_materials.create(teaching_material: @material, position: position)
+    end
+
+    redirect_to edit_homework_path(@homework), notice: "問題を追加しました"
+  end
+
+  def remove_material
+    @homework = current_user.homeworks.find(params[:id])
+    @material = TeachingMaterial.find(params[:material_id])
+    
+    @homework.homework_materials.find_by(teaching_material: @material)&.destroy
+
+    # 残りの問題の位置を整列し直す
+    @homework.homework_materials.order(:position).each.with_index do |material, index|
+      material.update(position: index)
+    end
+
+    redirect_to edit_homework_path(@homework), notice: "問題を削除しました"
+  end
+
+  def create
+    @homework = current_user.homeworks.build(homework_params)
+
+    if @homework.save
+      redirect_to edit_homework_path(@homework),
+                  notice: "#{t('notices.created', model: Homework.model_name.human)}。問題を追加してください。"
+    else
+      @account_groups = AccountGroup.all
       render :new, status: :unprocessable_entity
     end
   end
@@ -109,12 +131,6 @@ class HomeworksController < Admin::BaseController
   end
 
   def homework_params
-    params.require(:homework).permit(:title, :deadline, :account_group_id, teaching_material_ids: [])
-  end
-
-  def material_titles
-    material_ids = params[:ids].split(',')
-    materials = TeachingMaterial.where(id: material_ids, user: current_user)
-    render json: materials.pluck(:id, :title).to_h
+    params.require(:homework).permit(:title, :deadline, :account_group_id)
   end
 end

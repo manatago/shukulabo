@@ -10,7 +10,49 @@ class Homework < ApplicationRecord
   validates :deadline, presence: true
   validates :account_group_id, presence: true
   validate :deadline_must_be_future
-  validate :must_have_materials
+
+  # 生徒グループ名と期限から自動的にタイトルを生成
+  def self.generate_title(account_group_name, deadline)
+    return nil if account_group_name.blank? || deadline.blank?
+    time_str = deadline.strftime('%Y-%m-%d_%H-%M-%S')
+    "#{account_group_name}_#{time_str}"
+  end
+
+  # 特定の生徒グループのリピート対象の問題を取得
+  def self.repeat_materials_for_group(account_group)
+    # 生徒グループの宿題を取得
+    homework_ids = Homework.where(account_group: account_group).pluck(:id)
+    answers = HomeworkAnswer.where(homework_id: homework_ids)
+    
+    # 各回答からリピート対象の問題とその宿題の情報を取得
+    repeat_info = HomeworkAnswerGrade.where(homework_answer: answers, repeat: true)
+      .joins(homework_answer: :homework)
+      .select('homework_answer_grades.teaching_material_id',
+              'homeworks.deadline as homework_deadline',
+              'homeworks.id as homework_id')
+      .order('homeworks.deadline DESC')
+    
+    # 重複する教材は最新の宿題の情報を使用
+    material_info = repeat_info.group_by(&:teaching_material_id)
+      .transform_values { |grades| grades.first }
+    
+    # 教材と日付情報をまとめて返す
+    material_ids = material_info.keys
+    materials = TeachingMaterial.where(id: material_ids)
+    
+    # 教材オブジェクトに日付情報を付加
+    materials.each do |material|
+      info = material_info[material.id]
+      material.instance_variable_set(:@homework_deadline, info.homework_deadline)
+      material.instance_eval do
+        def homework_deadline
+          @homework_deadline
+        end
+      end
+    end
+    
+    materials.sort_by(&:homework_deadline).reverse
+  end
 
   # 指定ユーザーの回答を取得
   def answer_by(user)
@@ -60,13 +102,6 @@ class Homework < ApplicationRecord
     
     if deadline <= Time.current
       errors.add(:deadline, "は現在時刻より後に設定してください")
-    end
-  end
-
-  def must_have_materials
-    # パラメータとして渡されたteaching_material_idsをチェック
-    if teaching_material_ids.blank?
-      errors.add(:base, "少なくとも1つの問題を選択してください")
     end
   end
 end
