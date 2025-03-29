@@ -54,6 +54,13 @@ class Homework < ApplicationRecord
     materials.sort_by(&:homework_deadline).reverse
   end
 
+  # 特定の生徒グループに過去出題した問題のIDを取得
+  def self.previously_assigned_material_ids(account_group)
+    joins(:homework_materials)
+      .where(account_group: account_group)
+      .pluck(Arel.sql('DISTINCT homework_materials.teaching_material_id'))
+  end
+
   # 指定ユーザーの回答を取得
   def answer_by(user)
     homework_answers.find_by(user: user)

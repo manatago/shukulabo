@@ -21,8 +21,10 @@ class HomeworksController < Admin::BaseController
     if params[:basic]
       render :basic_edit
     else
-      # 通常の教材一覧
+      # 通常の教材一覧（過去に出題した問題を除外）
+      previously_assigned_ids = Homework.previously_assigned_material_ids(@homework.account_group)
       @available_materials = TeachingMaterial.where(user: current_user)
+                                           .where.not(id: previously_assigned_ids)
       
       # 検索条件の適用
       @available_materials = @available_materials.where('title LIKE ?', "%#{params[:search]}%") if params[:search].present?
