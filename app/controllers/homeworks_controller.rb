@@ -51,7 +51,7 @@ class HomeworksController < Admin::BaseController
     @material = TeachingMaterial.find(params[:material_id])
     
     unless @homework.teaching_materials.include?(@material)
-      position = @homework.homework_materials.maximum(:position).to_i + 1
+      position = @homework.homework_materials.count
       @homework.homework_materials.create(teaching_material: @material, position: position)
     end
 
@@ -113,12 +113,38 @@ class HomeworksController < Admin::BaseController
 
     if @grade.update(grade_params)
       Rails.logger.debug "Grade updated successfully: #{@grade.inspect}"
-      flash.now[:notice] = "#{@answer.user.name}さんの回答（問題#{@homework.homework_materials.find_by(teaching_material: @material).position + 1}）を採点しました"
-      redirect_to @homework, notice: flash.now[:notice], status: :see_other
+      message = "採点を保存しました"
+      
+      respond_to do |format|
+        format.turbo_stream {
+          render turbo_stream: [
+            turbo_stream.update("grade_status_#{@answer.id}_#{@material.id}",
+                              partial: "grade_status",
+                              locals: { grade: @grade }),
+            turbo_stream.update("grade_form_#{@answer.id}_#{@material.id}",
+                              partial: "grade_form",
+                              locals: { homework: @homework,
+                                      answer: @answer,
+                                      material: @material,
+                                      grade: @grade,
+                                      notice: "採点を保存しました" })
+          ]
+        }
+        format.html { redirect_to @homework, notice: message, status: :see_other }
+      end
     else
       Rails.logger.debug "Grade update failed: #{@grade.errors.full_messages}"
       error_messages = @grade.errors.full_messages.join(", ")
-      redirect_to @homework, alert: "採点の保存に失敗しました: #{error_messages}", status: :unprocessable_entity
+      respond_to do |format|
+        format.turbo_stream {
+          render turbo_stream: turbo_stream.update(
+            "grade_status_#{@answer.id}_#{@material.id}",
+            partial: "grade_status",
+            locals: { grade: @grade }
+          )
+        }
+        format.html { redirect_to @homework, alert: "採点の保存に失敗しました: #{error_messages}", status: :unprocessable_entity }
+      end
     end
   end
 

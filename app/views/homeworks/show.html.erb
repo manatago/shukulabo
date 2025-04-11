@@ -187,16 +187,9 @@
                                             aria-controls="problem<%= answer.id %>_<%= material.id %>"
                                             aria-labelledby="heading<%= answer.id %>_<%= material.id %>">
                                       問題 <%= index + 1 %>
-                                      <% if grade %>
-                                        <span class="ms-2 badge <%= grade.score == 2 ? 'bg-success' : (grade.score == 1 ? 'bg-warning' : 'bg-danger') %>">
-                                          <%= grade.score_label %>
-                                        </span>
-                                        <% if grade.repeat? %>
-                                          <span class="ms-1 badge bg-info">リピート</span>
-                                        <% end %>
-                                      <% else %>
-                                        <span class="ms-2 badge bg-secondary">未採点</span>
-                                      <% end %>
+                                      <span id="grade_status_<%= answer.id %>_<%= material.id %>">
+                                        <%= render "grade_status", grade: grade %>
+                                      </span>
                                     </button>
                                   </h2>
                                   <div id="problem<%= answer.id %>_<%= material.id %>"
@@ -241,67 +234,13 @@
                                         </div>
                                       </div>
 
-                                      <%= form_with model: grade || HomeworkAnswerGrade.new,
-                                                  url: grade_answer_homework_path(@homework, answer, teaching_material_id: material.id),
-                                                  method: :patch,
-                                                  data: { turbo: false },
-                                                  html: { id: "gradeForm#{answer.id}_#{material.id}" },
-                                                  scope: :grade do |f| %>
-                                        <div class="mb-3">
-                                          <label class="form-label">採点</label>
-                                          <div class="btn-group w-100" role="group">
-                                            <% HomeworkAnswerGrade::SCORES.each do |key, value| %>
-                                              <input type="radio" class="btn-check" name="grade[score]"
-                                                    id="score_<%= answer.id %>_<%= material.id %>_<%= value %>" value="<%= value %>"
-                                                    <%= 'checked' if grade&.score == value %>>
-                                              <label class="btn <%= grade&.score == value ? 'btn-primary' : 'btn-outline-primary' %>"
-                                                     for="score_<%= answer.id %>_<%= material.id %>_<%= value %>">
-                                                <%= key == :good ? "○" : (key == :fair ? "△" : "×") %>
-                                              </label>
-                                            <% end %>
-                                          </div>
-                                        </div>
+                                      <div id="flash_messages_<%= answer.id %>"></div>
+                                      <%= render "grade_form",
+                                          homework: @homework,
+                                          answer: answer,
+                                          material: material,
+                                          grade: grade %>
 
-                                        <div class="mb-3">
-                                          <div class="form-check">
-                                            <%= f.check_box :repeat, class: "form-check-input" %>
-                                            <%= f.label :repeat, "リピートが必要", class: "form-check-label" %>
-                                          </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                          <%= f.label :comment, "コメント", class: "form-label" %>
-                                          <%= f.text_area :comment, class: "form-control", rows: 3 %>
-                                        </div>
-
-                                        <div class="text-end">
-                                          <%= f.submit "採点を保存", class: "btn btn-primary" %>
-                                        </div>
-                                      <% end %>
-
-                                      <script>
-                                        // フォーム送信とフォーカス管理
-                                        (function() {
-                                          const form = document.getElementById('gradeForm<%= answer.id %>_<%= material.id %>');
-                                          const modal = document.getElementById('gradeModal<%= answer.id %>');
-                                          const trigger = document.querySelector(`button[data-bs-target="#gradeModal<%= answer.id %>"]`);
-
-                                          form.addEventListener('submit', function() {
-                                            const bootstrapModal = bootstrap.Modal.getInstance(modal);
-                                            setTimeout(function() {
-                                              bootstrapModal.hide();
-                                              // モーダルを開いたボタンにフォーカスを戻す
-                                              trigger?.focus();
-                                            }, 100);
-                                          });
-
-                                          // モーダルが開いたときの処理
-                                          modal.addEventListener('shown.bs.modal', function() {
-                                            // 最初のラジオボタンにフォーカス
-                                            form.querySelector('input[type="radio"]')?.focus();
-                                          });
-                                        })();
-                                      </script>
                                     </div>
                                   </div>
                                 </div>
