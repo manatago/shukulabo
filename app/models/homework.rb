@@ -51,6 +51,20 @@ class Homework < ApplicationRecord
       end
     end
     
+    # 出題回数を計算して付加
+    materials.each do |material|
+      count = Homework.joins(:homework_materials)
+                    .where(account_group: account_group)
+                    .where(homework_materials: { teaching_material_id: material.id })
+                    .count
+      material.instance_variable_set(:@assignment_count, count)
+      material.instance_eval do
+        def assignment_count
+          @assignment_count
+        end
+      end
+    end
+
     materials.sort_by(&:homework_deadline).reverse
   end
 

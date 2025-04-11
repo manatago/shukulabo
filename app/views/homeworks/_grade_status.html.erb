@@ -1,0 +1,10 @@
+<% if grade %>
+  <span class="ms-2 badge <%= grade.score == 2 ? 'bg-success' : (grade.score == 1 ? 'bg-warning' : 'bg-danger') %>">
+    <%= grade.score_label %>
+  </span>
+  <% if grade.repeat? %>
+    <span class="ms-1 badge bg-info">リピート</span>
+  <% end %>
+<% else %>
+  <span class="ms-2 badge bg-secondary">未採点</span>
+<% end %>

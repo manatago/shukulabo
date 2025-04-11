@@ -28,18 +28,28 @@
           <% @homework.homework_materials.includes(:teaching_material).order(:position).each do |material| %>
             <div class="list-group-item">
               <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <span class="badge bg-secondary me-2">問題<%= material.position + 1 %></span>
-                  <%= material.teaching_material.title %>
-                  <% if material.teaching_material.question_image.attached? %>
-                    <%= image_tag material.teaching_material.question_image,
-                        class: "ms-2",
-                        style: "cursor: pointer; height: 100px; width: auto; object-fit: contain;",
-                        data: {
-                          action: "click->image-modal#show",
-                          full_url: url_for(material.teaching_material.question_image)
-                        } %>
-                  <% end %>
+                <div class="d-flex align-items-center">
+                  <div>
+                    <span class="badge bg-secondary me-2">問題<%= material.position + 1 %></span>
+                    <%= material.teaching_material.title %>
+                    <% if material.teaching_material.question_image.attached? %>
+                      <%= image_tag material.teaching_material.question_image,
+                          class: "ms-2",
+                          style: "cursor: pointer; height: 100px; width: auto; object-fit: contain;",
+                          data: {
+                            action: "click->image-modal#show",
+                            full_url: url_for(material.teaching_material.question_image)
+                          } %>
+                    <% end %>
+                  </div>
+                  <div class="ms-auto">
+                    <%= button_to remove_material_homework_path(@homework, material_id: material.teaching_material.id),
+                        method: :delete,
+                        class: "btn btn-outline-danger btn-sm",
+                        form: { data: { turbo_confirm: "この問題を削除してもよろしいですか？" } } do %>
+                      <i class="bi bi-trash"></i>
+                    <% end %>
+                  </div>
                 </div>
               </div>
             </div>
@@ -140,7 +150,7 @@
                     <% material.tags.each do |tag| %>
                       <span class="badge bg-secondary ms-1"><%= tag.name %></span>
                     <% end %>
-                    <span class="badge bg-info ms-2">リピート</span>
+                    <span class="badge bg-info ms-2">リピート(<%= material.assignment_count %>)</span>
                     <small class="text-muted ms-2">
                       （期限：<%= l material.homework_deadline, format: :short %>）
                     </small>
